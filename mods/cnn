@@ -227,6 +227,7 @@ function neural_network(data, filter_size, body){
       neuron_chain,
       filter_matches_index = 0,
       selected_color = "white",
+      letters = ["A", "C", "G", "T"],
 
       // visualization parameters
       radius = 102.5 * Math.pow(biggest_layer, -0.78),
@@ -379,43 +380,33 @@ function neural_network(data, filter_size, body){
       nodes.push(d)
   })
 
-  var sqlogo_data = [];
-  d3.select(body).selectAll("circle").each(function (d) {
+  var sequence_logo = [];
+  node.each(function (d) {
       chain = [];
       getUpperChain(d.node, chain);
       getLowerChain(d.node, chain);
       d.chain = chain;
-      var lst_nidex = d.node - last_layer_index + 1;
-      if (lst_nidex > 0) {
-          var n_mod = lst_nidex % 4;
-          if (n_mod == 1) {
-              var sq_chunk = [];
-              var data_sum = nodes[d.node]['value'] + nodes[d.node + 1]['value'] + nodes[d.node + 2]['value'] + nodes[d.node + 3]['value'];
-              var entropy = nodes[d.node]['value'] * Math.log2(nodes[d.node]['value']) + nodes[d.node + 1]['value'] * Math.log2(nodes[d.node + 1]['value']) + nodes[d.node + 2]['value'] * Math.log2(nodes[d.node + 2]['value']) + nodes[d.node + 3][
-                      'value'
-                      ] * Math.log2(nodes[d.node + 3]['value']);
+      neuron_index = d.node - last_layer_index + 1;
+      if (neuron_index > 0) {
+          if (neuron_index % letters.length == 1) {
+              var graph_column = [];
+              var sum = 0
+              for (var i = d.node; i < d.node + letters.length; i++) {
+                sum += nodes[i]['value']
+              }
+              var entropy = 0
+              for (var i = d.node; i < d.node + letters.length; i++) {
+                entropy += nodes[i]['value'] * Math.log2(nodes[i]['value'])
+              }
               var scale = 2 - entropy;
-              sq_chunk.push({
-                  letter: "A",
-                  bits: scale * nodes[d.node]['value'] / data_sum,
-                  node: d.node
-              });
-              sq_chunk.push({
-                  letter: "C",
-                  bits: scale * nodes[d.node + 1]['value'] / data_sum,
-                  node: d.node + 1
-              });
-              sq_chunk.push({
-                  letter: "G",
-                  bits: scale * nodes[d.node + 2]['value'] / data_sum,
-                  node: d.node + 2
-              });
-              sq_chunk.push({
-                  letter: "T",
-                  bits: scale * nodes[d.node + 3]['value'] / data_sum,
-                  node: d.node + 3
-              });
-              sqlogo_data.push(sq_chunk);
+              for (var i = d.node; i < d.node + letters.length; i++) {
+                graph_column.push({
+                  letter: letters[i % letters.length],
+                  bits: scale * nodes[i]['value'] / sum,
+                  node: i
+                })
+              }
+              sequence_logo.push(graph_column);
           }
       }
   })
@@ -437,12 +428,12 @@ function neural_network(data, filter_size, body){
       .orient("left")
       .ticks(5);
 
-  for (var i = 0; i < sqlogo_data.length; i++) {
-      sqlogo_data[i].sort(function (a, b) {
+  for (var i = 0; i < sequence_logo.length; i++) {
+      sequence_logo[i].sort(function (a, b) {
           return d3.ascending(a.bits, b.bits);
       });
   }
-  sqlogo_data.forEach(function (d) {
+  sequence_logo.forEach(function (d) {
       var y0 = 0;
       d.bits = d.map(function (entry) {
           return {
@@ -455,10 +446,10 @@ function neural_network(data, filter_size, body){
       })
       d.bitTotal = d.bits[d.bits.length - 1].y1;
   });
-  x.domain(sqlogo_data.map(function (d, i) {
+  x.domain(sequence_logo.map(function (d, i) {
       return i;
   }));
-  var maxBits = d3.max(sqlogo_data, function (d) {
+  var maxBits = d3.max(sequence_logo, function (d) {
       return d.bitTotal
   });
 
@@ -485,7 +476,7 @@ function neural_network(data, filter_size, body){
 
 
   var column = sq_logo.selectAll(".sequence-column")
-      .data(sqlogo_data)
+      .data(sequence_logo)
       .enter()
       .append("g")
       .attr("transform", function (d, i) {
