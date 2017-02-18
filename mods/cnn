@@ -228,6 +228,8 @@ function neural_network(data, filter_size, body){
       filter_matches_index = 0,
       selected_color = "white",
       letters = ["A", "C", "G", "T"],
+      letter_colors = ["#66BB6A", "#2196F3",
+                       "#FFEE58", "#E57373"],
 
       // visualization parameters
       radius = 102.5 * Math.pow(biggest_layer, -0.78),
@@ -237,6 +239,7 @@ function neural_network(data, filter_size, body){
       hidden_opacity = Math.pow(0.1, hidden_opacity_base),
       link_value_exp = 6,
       link_radius_exp = 1.6,
+      label_scale = 0.195,
 
       //layout/interface data
       units = "Widgets",
@@ -410,26 +413,27 @@ function neural_network(data, filter_size, body){
           }
       }
   })
-  // Drawing the actual Sequence Logo         -----------------------
+
+
+  // Set up Sequence Logo
   var x = d3.scale.ordinal()
       .rangeRoundBands([0, width], .1);
-
   var y = d3.scale.linear()
       .range([height, 0]);
-  var yy = d3.scale.linear()
-      .range([height * 0.195, 0]);
-
+  var labels = d3.scale.linear()
+      .range([height * label_scale, 0]);
   var xAxis = d3.svg.axis()
       .scale(x)
       .orient("bottom").ticks(0);
-
   var yAxis = d3.svg.axis()
-      .scale(yy)
+      .scale(labels)
       .orient("left")
       .ticks(5);
 
-  for (var i = 0; i < sequence_logo.length; i++) {
-      sequence_logo[i].sort(function (a, b) {
+
+  // more bit-valued letters are above
+  for (var col = 0; col < sequence_logo.length; col++) {
+      sequence_logo[col].sort(function (a, b) {
           return d3.ascending(a.bits, b.bits);
       });
   }
@@ -454,17 +458,18 @@ function neural_network(data, filter_size, body){
   });
 
   y.domain([0, maxBits]);
-  yy.domain([0, 2]);
+  labels.domain([0, 2]);
 
 
-  var sq_logo = svg.append("g").attr("transform", "rotate(90) translate(135, -623) scale(" + neurons_at_last_layer / 30 + ", 1)")
-
-
+  // manual translation & manual height setting
+  // for fitting within the page layout
+  var sq_logo = svg.append("g")
+                .attr("transform",
+                "rotate(90) translate(135, -623) scale(" + neurons_at_last_layer / 30 + ", 1)")
   sq_logo.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height * 0.2 + ")")
       .call(xAxis);
-
   sq_logo.append("g")
       .attr("class", "y axis")
       .call(yAxis)
@@ -475,54 +480,53 @@ function neural_network(data, filter_size, body){
       .text("Bits");
 
 
-  var column = sq_logo.selectAll(".sequence-column")
+  var column = sq_logo.selectAll(".column")
       .data(sequence_logo)
       .enter()
       .append("g")
       .attr("transform", function (d, i) {
           return "translate(" + (x(i) + (x.rangeBand() / 2)) + ",0)";
       })
-      .attr("class", "sequence-column");
+      .attr("class", "column");
 
-  var capHeightAdjust = 1.6; // approximation to bring cap-height to full font size
-  column
-      .selectAll("text")
-      .data(function (d) {
-          return d.bits;
-      })
-      .enter()
-      .append("text")
-      .attr("y", function (e) {
-          return y(e.y0) * 0.2;
-      })
-      .text(function (e) {
-          return e.letter;
-      })
-      .attr("class", function (e) {
-          return "letter-bp letter-" + e.letter;
-      })
-      .attr("id", function (e) {
-          return "bp_" + e.node;
-      })
-      .style("text-anchor", "middle")
-      .style("font-family", "Orator Std Medium")
-      .style("pointer-events", "none")
-      .attr("textLength", x.rangeBand() * 0.7)
-      .attr("lengthAdjust", "spacingAndGlyphs")
-      .attr("font-size", function (e) {
-          return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
-      })
-      .style("font-size", function (e) {
-          return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
-      });
+  // approximation to bring cap-height to full font size
+  var capHeightAdjust = 1.6;
+  column.selectAll("text")
+        .data(function (d) {
+            return d.bits;
+        })
+        .enter()
+        .append("text")
+        .attr("y", function (e) {
+            return y(e.y0) * 0.2;
+        })
+        .text(function (e) {
+            return e.letter;
+        })
+        .attr("class", function (e) {
+            return "letter-bp letter-" + e.letter;
+        })
+        .attr("id", function (e) {
+            return "bp_" + e.node;
+        })
+        .style("text-anchor", "middle")
+        .style("font-family", "Orator Std Medium")
+        .style("pointer-events", "none")
+        .attr("textLength", x.rangeBand() * 0.7)
+        .attr("lengthAdjust", "spacingAndGlyphs")
+        // font sized for fitting
+        .attr("font-size", function (e) {
+            return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
+        })
+        .style("font-size", function (e) {
+            return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
+        });
 
   d3.select(body).selectAll(".tick").attr("visibility","hidden");
-  column.selectAll(".letter-A").style("fill", "#66BB6A")
-  column.selectAll(".letter-C").style("fill", "#2196F3")
-  column.selectAll(".letter-T").style("fill", "#E57373")
-  column.selectAll(".letter-G").style("fill", "#FFEE58")
-
-  // ----------------------- ----------------------- -----------------------
+  // color the letters
+  for (var lttr = 0; lttr < letters.length; lttr++){
+    column.selectAll(".letter-" + letters[lttr]).style("fill", letter_colors[lttr])
+  }
 
 
   var tool_index,
