@@ -1,0 +1,155 @@
+//
+// APA node module
+//
+// Neil Gershenfeld
+// (c) Massachusetts Institute of Technology 2016
+//
+// This work may be reproduced, modified, distributed, performed, and
+// displayed for any purpose, but must acknowledge the mods
+// project. Copyright is retained and must be preserved. The work is
+// provided as is; no warranty is provided, and users accept all
+// liability.
+//
+// closure
+//
+(function(){
+//
+// module globals
+//
+var mod = {}
+//
+// name
+//
+var name = 'lightemitter'
+
+//
+// initialization
+//
+var init = function() {
+  mod.value = 0;
+  mod.emitter = 1;
+ }
+//
+// inputs
+//
+var inputs = {
+
+  sequence1: {type:"integer",
+  event: function(evt){
+     mod.value = evt.detail
+     post_value(mod.value)
+   }
+ }
+
+}
+//
+// outputs
+//
+var outputs = {
+  }
+//
+// interface
+//
+var interface = function(div){
+  //
+  // change parameters buttons
+  //
+  mod.div = div
+  var program = ""
+  var sel = document.createElement('select')
+     sel.style.padding = mods.ui.padding
+  //
+  // view button
+  //
+  var btn = document.createElement('button')
+     btn.style.padding = mods.ui.padding
+     btn.style.margin = 1
+     btn.appendChild(document.createTextNode('view'))
+     btn.addEventListener('click',function(){
+        var win = window.open('')
+        var btn = document.createElement('button')
+           btn.appendChild(document.createTextNode('close'))
+           btn.style.padding = mods.ui.padding
+           btn.style.margin = 1
+           btn.addEventListener('click',function(){
+              win.close()
+              })
+           win.document.body.appendChild(btn)
+        win.document.body.appendChild(document.createElement('br'))
+        var sequence  = document.createElement('p')
+           sequence.innerHTML = mod.str
+           sequence.width = Window.innerWidth;
+           sequence.height = Window.innerHeight;
+           win.document.body.appendChild(sequence)
+         })
+     div.appendChild(btn)
+  div.appendChild(document.createElement('br'))
+}
+
+//Local Functions
+
+
+function post_value(value) {
+    var root = "https://data.sparkfun.com/"
+    var parameters = "input/VG6K1EVjgnIMmK7xNz5M?private_key=9Y14k0M6Z8twkaPNAMKw"
+    var emitter = "light" + mod.emitter;
+    var webpage = root + parameters + "&mod=" + emitter + "&value=" + value;
+
+    var request = window.setInterval(function(){
+      console.log("requesting!")
+      $jsonp.send(webpage, {
+          callbackName: 'handleStuff',
+          onSuccess: function(json){
+              console.log('data pushed');
+              clearInterval(request);
+          },
+          timeout: 15
+      });
+    }, 16000);
+
+}
+
+var $jsonp = (function(){
+  var that = {};
+
+  that.send = function(src, options) {
+    var callback_name = options.callbackName || 'callback',
+      on_success = options.onSuccess || function(){},
+      on_timeout = function(){
+        console.log("timed!");
+      },
+      timeout = options.timeout || 10; // sec
+
+    var timeout_trigger = window.setTimeout(function(){
+      window[callback_name] = function(){};
+      on_timeout();
+    }, timeout * 1000);
+
+    window[callback_name] = function(data){
+      window.clearTimeout(timeout_trigger);
+      on_success(data);
+    }
+
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = src;
+
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  return that;
+})();
+
+
+//
+// return values
+//
+return ({
+   name:name,
+   init:init,
+   inputs:inputs,
+   outputs:outputs,
+   interface:interface
+   })
+}())

@@ -1,0 +1,721 @@
+//
+// APA node module
+//
+// Neil Gershenfeld
+// (c) Massachusetts Institute of Technology 2016
+//
+// This work may be reproduced, modified, distributed, performed, and
+// displayed for any purpose, but must acknowledge the mods
+// project. Copyright is retained and must be preserved. The work is
+// provided as is; no warranty is provided, and users accept all
+// liability.
+//
+// closure
+//
+(function(){
+
+//
+// module globals
+//
+var mod = {}
+//
+// name
+//
+var name = 'cnn'
+
+//
+// initialization
+//
+var init = function() {
+  mod.filter_size = 10
+  mod.data = {}
+ }
+
+//
+// inputs
+//
+var inputs = {
+
+  sequence1: {type:"integer",
+  event: function(evt){
+     mod.value = evt.detail
+     post_value(mod.value)
+   }
+ }
+
+}
+//
+// outputs
+//
+var outputs = {
+  }
+//
+// interface
+//
+var interface = function(div){
+  //
+  // change parameters buttons
+  //
+  mod.div = div
+  //
+  // file input control
+  //
+  var file = document.createElement('input')
+     file.setAttribute('type','file')
+     file.setAttribute('id',div.id+'file_input')
+     file.style.position = 'absolute'
+     file.style.left = 0
+     file.style.top = 0
+     file.style.width = 0
+     file.style.height = 0
+     file.style.opacity = 0
+     file.addEventListener('change',function() {
+        json_read_handler()
+        })
+     div.appendChild(file)
+     mod.file = file
+  //
+  // on-screen drawing canvas
+  //
+  var canvas = document.createElement('canvas')
+     canvas.width = mods.ui.canvas
+     canvas.height = mods.ui.canvas
+     canvas.style.backgroundColor = 'rgb(255,255,255)'
+     div.appendChild(canvas)
+     mod.canvas = canvas
+  div.appendChild(document.createElement('br'))
+  //
+  // off-screen image canvas
+  //
+  var canvas = document.createElement('canvas')
+     mod.img = canvas
+  //
+  // file select button
+  //
+  var btn = document.createElement('button')
+     btn.style.padding = mods.ui.padding
+     btn.style.margin = 1
+     btn.appendChild(document.createTextNode('select json file'))
+     btn.addEventListener('click',function(){
+        var file = document.getElementById(div.id+'file_input')
+        file.value = null
+        file.click()
+        })
+     div.appendChild(btn)
+  div.appendChild(document.createElement('br'))
+  //
+  // view button
+  //
+  var btn = document.createElement('button')
+     btn.style.padding = mods.ui.padding
+     btn.style.margin = 1
+     btn.appendChild(document.createTextNode('view'))
+     btn.addEventListener('click',function(){
+        var win = window.open('')
+        var btn = document.createElement('button')
+           btn.appendChild(document.createTextNode('close'))
+           btn.style.padding = mods.ui.padding
+           btn.style.margin = 1
+           btn.addEventListener('click',function(){
+              win.close()
+              })
+           win.document.body.appendChild(btn)
+        var txt_div = document.createElement('p')
+           txt_div.style.width = '600px'
+           txt_div.style.position = 'absolute'
+           txt_div.style.left = '130px'
+           txt_div.style.top = '700px'
+           txt_div.style.textAlign = 'center'
+        var text = document.createElement('p')
+           text.id = "sequence_p"
+           text.style.wordWrap = 'break-word'
+           text.style.fontFamily = "Orator Std Medium"
+           txt_div.appendChild(text)
+           win.document.body.appendChild(txt_div)
+        win.document.body.appendChild(document.createElement('br'))
+        neural_network(mod.data, mod.size_filter, win.document.body);
+        })
+     div.appendChild(btn)
+  div.appendChild(document.createTextNode(' '))
+}
+
+
+// Local Functions
+//
+// read handler
+//
+function json_read_handler(event) {
+   var file_reader = new FileReader()
+   file_reader.onload = json_handler
+   input_file = mod.file.files[0]
+   file_name = input_file.name
+   file_reader.readAsText(input_file)
+   }
+
+function json_handler(event) {
+   var lines = event.target.result;
+   var data = JSON.parse(lines);
+   mod.data = data;
+}
+//
+// neural network visualization
+//
+
+function getMaxOfArray(numArray) {
+    return Math.max.apply(null, numArray);
+}
+
+function colores(n) {
+    var colores_g = ["#B0BEC5", "#C5E1A5", "#81D4FA", "#FFF59D", "#A5D6A7", "#ef9a9a", "#E6EE9C", "#FFAB91", "#90CAF9", "#F48FB1", "#9FA8DA", "#FFCC80", "#80CBC4", "#CE93D8", "#B39DDB", "#80DEEA", "#FFE082"];
+    return colores_g[n % colores_g.length];
+}
+var weightsSign = function (weights) {
+    if (weights < 0) {
+        return -weights;
+    } else {
+        return 0.1;
+    }
+}
+
+
+//
+// $("#sq_filter").on("change", function () {
+//
+//     var selected_filter = $("#sq_filter").find("option:selected").text();
+//     if (selected_filter == "Each Letter") {
+//         d3.selectAll(".letter-bp").style("fill", function (d, i) {
+//             return colores(i);
+//         })
+//     } else if (selected_filter == "Purines-Pyrimidines") {
+//
+//         d3.selectAll(".letter-bp").style("fill", function (d, i) {
+//             if (d3.select(this).text() == "A" || d3.select(this).text() == "G") {
+//                 return "lightblue"
+//             } else {
+//                 return "orange"
+//             }
+//         })
+//
+//     } else if (selected_filter == "A-T-G-C") {
+//         d3.selectAll(".letter-bp").style("fill", function (d, i) {
+//             if (d3.select(this).text() == "A") {
+//                 return "#66BB6A"
+//             } else if (d3.select(this).text() == "C") {
+//                 return "#2196F3"
+//             } else if (d3.select(this).text() == "T") {
+//                 return "#E57373"
+//             } else {
+//                 return "#FFEE58"
+//             }
+//         })
+//
+//
+//     }
+//
+//
+// })
+
+function neural_network(data, filter_size, body){
+  var units = "Widgets";
+  var margin = {
+          top: 150,
+          right: 450,
+          bottom: 150,
+          left: 550
+      },
+      width = 1500 - margin.left - margin.right,
+      height = 1000 - margin.top - margin.bottom;
+
+  var weights = data.out_weights;
+  var biases = data.out_biases;
+  var filter_matches = data.input_matches;
+  var filter_size = data.filter_size;
+  var sizes = [];
+  for (var i = 0; i < weights.length; i++) {
+      sizes.push(0);
+      for (var j = 0; j < weights[i].length; j++) {
+          sizes[i]++;
+      }
+      if (i == weights.length - 1) {
+          sizes.push(0);
+          sizes[i + 1] = weights[i][0].length;
+      }
+  }
+  var first_row_size = sizes[0],
+      size_size = 0,
+      last_row_size = sizes[sizes.length - 1],
+      threshold = 0.98,
+      max_size = getMaxOfArray(sizes),
+      radius = 102.5 * Math.pow(max_size, -0.78),
+      padding = 800 / max_size,
+      opacity_power = max_size / 4,
+      opacity_dark_power = Math.pow(opacity_power, 1 / 30),
+      obscure_opacity = Math.pow(0.1, opacity_dark_power),
+      index = 0,
+      network = [],
+      network_chain = [],
+      current,
+      filter_matches_index = 0,
+      last_color = "white";
+
+  //Create network properties
+  for (var i = 0; i < sizes.length; i++) {
+      network[i] = [];
+      for (var j = 0; j < sizes[i]; j++) {
+          size_size++;
+          if (index > first_row_size) {
+              network[i].push({
+                  "node": index,
+                  "bias": biases[i - 1][j]
+              });
+          } else {
+              network[i].push({
+                  "node": index
+              });
+          }
+          network_chain.push({
+              "node": index
+          });
+          index++;
+      }
+      var last_row_index = size_size - last_row_size;
+  }
+  var connections = [];
+  for (var i = 0; i < (network.length - 1); i++) {
+      for (var j = 0; j < network[i].length; j++) {
+          for (var k = 0; k < network[i + 1].length; k++) {
+              connections.push({
+                  "source": network[i][j]["node"],
+                  "target": network[i + 1][k]["node"],
+                  "value": weightsSign(weights[i][j][k]),
+                  "boolean": weights[i][j][k] < network[i + 1][k]["bias"] - 0.5
+              });
+          }
+      }
+  }
+  var graph = {
+      "nodes": network_chain,
+      "links": connections
+  };
+  var svg = d3.select(body).append("svg").attr("id", "sankey")
+      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", width + margin.left + margin.right)
+      .append("g")
+      .attr("transform",
+          "rotate(-90 " + 1500 / 2 + " " + 1000 / 2 + ")")
+      .append("g")
+      .attr("transform",
+          "translate(" + margin.left * 1.1 + "," + (-125) + ")");
+
+
+  d3.select(body).select("#sequence_p").text(filter_matches[0][0]);
+  var sankey = d3.sankey()
+      .nodeWidth(40)
+      .width(width)
+      .nodePadding(padding)
+      .size([width, height]);
+  var path = sankey.link();
+  sankey
+      .lastrow(last_row_size)
+      .nodeRadius(radius)
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .layout(32);
+
+  var link = svg.append("g").attr("id", "alllinks").selectAll(".link")
+      .data(graph.links)
+      .enter().append("path")
+      .filter(function (d) {
+          return d.boolean;
+      })
+      .attr("class", function (d) {
+          if (d.boolean) {
+              return "_" + d.source.node + " link";
+          }
+      })
+      .attr("id", function (d) {
+          if (d.boolean) {
+              return "_" + d.target.node
+          }
+      })
+      .style({
+          "opacity": obscure_opacity,
+          "fill": "none",
+          "stroke": "#606060",
+          "z-index": "-1"
+      })
+      .attr("d", path)
+      .style("opacity", obscure_opacity)
+      .style("stroke-width", function (d) {
+          return Math.pow(d.value, 6) * Math.pow(radius, 1.6);
+      })
+
+  var node = svg.append("g").selectAll(".node")
+      .data(graph.nodes)
+      .enter().append("g")
+      .attr("class", "node")
+      .attr("transform", function (d) {
+          return "translate(" + d.x + "," + d.y + ")";
+      })
+
+
+  var stroke_width = radius / 3;
+  node.append("circle")
+      .attr("r", radius)
+      .style("fill", "transparent")
+      .style("stroke", "darkgray")
+      .attr("id", function (d) {
+          return "__" + d.node
+      })
+      .style("stroke-width", stroke_width)
+
+  var links = [];
+  var nodes = [];
+  var chain = [];
+  var this_node;
+
+  link.each(function (d) {
+      links.push(d);
+  })
+  d3.select(body).selectAll("circle").each(function (d) {
+
+      nodes.push(d)
+  })
+
+  var sqlogo_data = [];
+  d3.select(body).selectAll("circle").each(function (d) {
+      chain = [];
+      this_node = d.node;
+      chainingup(this_node);
+      chainingdown(this_node);
+      d.chain = chain;
+      var lst_nidex = d.node - last_row_index + 1;
+      if (lst_nidex > 0) {
+          var n_mod = lst_nidex % 4;
+          if (n_mod == 1) {
+              var sq_chunk = [];
+              var data_sum = nodes[d.node]['value'] + nodes[d.node + 1]['value'] + nodes[d.node + 2]['value'] + nodes[d.node + 3]['value'];
+              var entropy = nodes[d.node]['value'] * Math.log2(nodes[d.node]['value']) + nodes[d.node + 1]['value'] * Math.log2(nodes[d.node + 1]['value']) + nodes[d.node + 2]['value'] * Math.log2(nodes[d.node + 2]['value']) + nodes[d.node + 3][
+                      'value'
+                      ] * Math.log2(nodes[d.node + 3]['value']);
+              var scale = 2 - entropy;
+              sq_chunk.push({
+                  letter: "A",
+                  bits: scale * nodes[d.node]['value'] / data_sum,
+                  node: d.node
+              });
+              sq_chunk.push({
+                  letter: "C",
+                  bits: scale * nodes[d.node + 1]['value'] / data_sum,
+                  node: d.node + 1
+              });
+              sq_chunk.push({
+                  letter: "G",
+                  bits: scale * nodes[d.node + 2]['value'] / data_sum,
+                  node: d.node + 2
+              });
+              sq_chunk.push({
+                  letter: "T",
+                  bits: scale * nodes[d.node + 3]['value'] / data_sum,
+                  node: d.node + 3
+              });
+              sqlogo_data.push(sq_chunk);
+          }
+      }
+  })
+  // Drawing the actual Sequence Logo         -----------------------
+  var x = d3.scale.ordinal()
+      .rangeRoundBands([0, width], .1);
+
+  var y = d3.scale.linear()
+      .range([height, 0]);
+  var yy = d3.scale.linear()
+      .range([height * 0.195, 0]);
+
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom").ticks(0);
+
+  var yAxis = d3.svg.axis()
+      .scale(yy)
+      .orient("left")
+      .ticks(5);
+
+  for (var i = 0; i < sqlogo_data.length; i++) {
+      sqlogo_data[i].sort(function (a, b) {
+          return d3.ascending(a.bits, b.bits);
+      });
+  }
+  sqlogo_data.forEach(function (d) {
+      var y0 = 0;
+      d.bits = d.map(function (entry) {
+          return {
+              bits: entry.bits,
+              letter: entry.letter,
+              node: entry.node,
+              y0: y0,
+              y1: y0 += +entry.bits
+          };
+      })
+      d.bitTotal = d.bits[d.bits.length - 1].y1;
+  });
+  x.domain(sqlogo_data.map(function (d, i) {
+      return i;
+  }));
+  var maxBits = d3.max(sqlogo_data, function (d) {
+      return d.bitTotal
+  });
+
+  y.domain([0, maxBits]);
+  yy.domain([0, 2]);
+
+
+  var sq_logo = svg.append("g").attr("transform", "rotate(90) translate(135, -623) scale(" + last_row_size / 30 + ", 1)")
+
+
+  sq_logo.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height * 0.2 + ")")
+      .call(xAxis);
+
+  sq_logo.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Bits");
+
+
+  var column = sq_logo.selectAll(".sequence-column")
+      .data(sqlogo_data)
+      .enter()
+      .append("g")
+      .attr("transform", function (d, i) {
+          return "translate(" + (x(i) + (x.rangeBand() / 2)) + ",0)";
+      })
+      .attr("class", "sequence-column");
+
+  var capHeightAdjust = 1.6; // approximation to bring cap-height to full font size
+  column
+      .selectAll("text")
+      .data(function (d) {
+          return d.bits;
+      })
+      .enter()
+      .append("text")
+      .attr("y", function (e) {
+          return y(e.y0) * 0.2;
+      })
+      .text(function (e) {
+          return e.letter;
+      })
+      .attr("class", function (e) {
+          return "letter-bp letter-" + e.letter;
+      })
+      .attr("id", function (e) {
+          return "bp_" + e.node;
+      })
+      .style("text-anchor", "middle")
+      .style("font-family", "Orator Std Medium")
+      .style("pointer-events", "none")
+      .attr("textLength", x.rangeBand() * 0.7)
+      .attr("lengthAdjust", "spacingAndGlyphs")
+      .attr("font-size", function (e) {
+          return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
+      })
+      .style("font-size", function (e) {
+          return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
+      });
+
+  d3.select(body).selectAll(".tick").attr("visibility","hidden");
+  column.selectAll(".letter-A").style("fill", "#66BB6A")
+  column.selectAll(".letter-C").style("fill", "#2196F3")
+  column.selectAll(".letter-T").style("fill", "#E57373")
+  column.selectAll(".letter-G").style("fill", "#FFEE58")
+
+  // ----------------------- ----------------------- -----------------------
+
+
+  var tool_index,
+      tool_text,
+      bef_text,
+      high_text,
+      aft_text;
+
+
+  d3.select(body).selectAll("circle")
+      .on("mouseenter", nodeEnter)
+      .on("click", nodeClick)
+      .on("mouseout", nodeOut)
+
+
+
+
+
+
+
+  function chainingdown(nodenum) {
+      chain.push(nodenum);
+      for (var i = 0; i < links.length; i++) {
+          if (links[i].target.node == nodenum && links[i].boolean) {
+              var nodenumm = links[i].source.node;
+              chainingdown(nodenumm);
+          }
+      }
+  }
+
+  function chainingup(nodenum) {
+      chain.push(nodenum);
+      for (var i = 0; i < links.length; i++) {
+          if (links[i].source.node == nodenum && links[i].boolean) {
+              var nodenumm = links[i].target.node;
+              chainingup(nodenumm);
+          }
+      }
+  }
+
+    function nodeOut(d) {
+          d3.select(body).select("#tooltip").attr("class", "hidden");
+          if (current) {
+              if (current.indexOf(d.node) == -1) {
+                  d3.select(this).attr("r", radius).style("opacity", 1).style("fill", "transparent");
+              } else {
+                  d3.select(this).attr("r", 9).style("opacity", 0.6).style("fill", last_color);
+              }
+          } else {
+              d3.select(this).attr("r", radius).style("opacity", 1).style("fill", "transparent");
+          }
+          d3.select(body).select("#sqlogo_hover")
+              .attr("src", "sq_img/none.png")
+      }
+
+
+  function nodeEnter(d) {
+      if (d.node < (size_size - last_row_size)) {
+          last_color = d3.select(this).style("fill");
+          d3.select(this).attr("r", 12).style("opacity", 0.5).style("fill", "white")
+          var top = d3.event.pageY - 140 + "px";
+          var left = d3.event.pageX - 65 + "px";
+          d3.select("#tooltip").style("margin-top", top).style("margin-left", left).attr("class", "");
+          tool_text = filter_matches[d.node][0];
+          tool_index = filter_matches[d.node][1];
+          bef_text = tool_text.substring(tool_index - 100, tool_index);
+          high_text = tool_text.substring(tool_index, tool_index + filter_size);
+          aft_text = tool_text.substring(tool_index + filter_size, tool_index + 100 + filter_size);
+          d3.select("#bef_span").text(bef_text);
+          d3.select("#tooltip_span").text(high_text).style('opacity', 5 * Math.pow(filter_matches[d.node][2], 5));
+          d3.select("#aft_span").text(aft_text);
+          d3.select("#sqlogo_hover")
+              .attr("src", function () {
+                  return "sq_img/" + d.node + ".png";
+              })
+      }
+  }
+
+  var current_sq = d3.select(body).select("#sequence_p").text();
+  $("#sq_id").on("change", function () {
+      d3.select(body).select("#sequence_p").text(filter_matches[$(this).val() - 1][0]);
+      current_sq = d3.select(body).select("#sequence_p").text();
+      filter_matches_index = $(this).val() - 1;
+      var node_id = "#__" + current[0];
+      d3.select(body).select(node_id).each(nodeClick)
+  })
+
+  function nodeClick(d) {
+      if (current) {
+          d3.select(body).selectAll("image").style("opacity", 0);
+          d3.select(body).selectAll(".letter-bp").style("filter", "grayscale(0%)").style("opacity", 0.3).style("-webkit-filter", "grayscale(0%)");
+          $(".letter-bp").removeClass("letter-highlight")
+          d3.select(body).select("#__" + current[0]).attr("r", radius).style("opacity", 1).style("fill", "transparent")
+          for (var i = 0; i < current.length; i++) {
+              var link_id = "#_" + current[i];
+              var link_class = "._" + current[i];
+              var node_id = "#__" + current[i];
+              d3.select(body).selectAll(link_id).style("opacity", obscure_opacity)
+              d3.select(body).selectAll(link_class).style("opacity", obscure_opacity)
+              if (current[i] < first_row_size) {
+                  d3.select(body).selectAll("#__" + current[i]).attr("r", radius).style("opacity", 1).style("fill", "transparent");
+              } else {
+                  d3.select(body).selectAll("#__" + current[i]).style("fill", "transparent");
+              }
+          }
+      }
+      current = d.chain;
+      if (size_size - d.node <= last_row_size) {
+          d3.select(this).attr("r", 10).style("opacity", 0.5)
+          d3.select(body).select("#_" + d.node).style("opacity", 1)
+      }
+      var new_text_i = [];
+      for (var i = 0; i < current.length; i++) {
+          if (current[i] == d.node) {
+              d3.select(body).selectAll("._" + current[i]).style("opacity", 1)
+              d3.select(body).selectAll("#_" + current[i]).style("opacity", 1)
+          } else if (current[i] < d.node) {
+              d3.select(body).selectAll("#_" + current[i]).style("opacity", 1)
+          }
+
+          d3.select(body).selectAll("#__" + current[i]).style("fill", "white")
+          if (current[i] < first_row_size) {
+              d3.select(body).selectAll("#__" + current[i]).attr("r", 9).style("opacity", 0.6).style("fill", function () {
+                  return colores(i)
+              });
+              d3.select(body).select("#___" + current[i]).style("opacity", 1);
+              new_text_i.push([filter_matches[filter_matches_index][2][current[i]], i]);
+          } else {
+              d3.select(body).selectAll("#__" + current[i]).style("fill", "white");
+              d3.select(body).select("#bp_" + current[i]).style("filter", "grayscale(100%)").style("opacity", 1).style("-webkit-filter", "grayscale(100%)");
+          }
+      }
+
+      new_text_i.sort(function (a, b) {
+          return a[0] - b[0];
+      });
+
+
+      d3.select(body).selectAll("#sequence_p span").remove();
+      d3.select(body).select("#sequence_p").text("");
+      var current_index = 0;
+      for (var i = 0; i < new_text_i.length; i++) {
+
+          if (new_text_i[i][0] >= current_index) {
+              d3.select(body).select("#sequence_p").append("span").text(current_sq.substring(current_index, new_text_i[i][0]));
+              d3.select(body).select("#sequence_p")
+                  .append("span")
+                  .attr("class", "highlighted")
+                  .style("color", function () {
+                      return colores(new_text_i[i][1]);
+                  })
+                  .style("opacity", filter_matches[filter_matches_index][1][current_sq] / 20)
+                  .text(current_sq.substring(new_text_i[i][0], new_text_i[i][0] + 10));
+          } else {
+              current_index = current_sq.indexOf(d3.select(body).select("#sequence_p span:last-child").text());
+              d3.select(body).select("#sequence_p span:last-child").remove();
+              d3.select(body).select("#sequence_p").append("span").attr("class", "highlighted").text(current_sq.substring(current_index, 10 + new_text_i[i][0]));
+          }
+          current_index = 10 + new_text_i[i][0];
+      }
+      d3.select(body).select("#sequence_p").append("span").text(current_sq.substring(current_index, current_sq.length - 1));
+
+
+  }
+
+}
+
+
+
+
+
+
+//
+// return values
+//
+return ({
+   name:name,
+   init:init,
+   inputs:inputs,
+   outputs:outputs,
+   interface:interface
+   })
+}())
