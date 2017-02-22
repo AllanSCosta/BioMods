@@ -215,9 +215,9 @@ function neural_network(data, filter_size, body){
   }
 
 
-
-  // parameters for visualization
-
+      //
+      // parameters for visualization
+      //
       // information from datafeed
   var first_row_size = neurons_by_layer[0],
       number_of_neurons = 0,
@@ -235,6 +235,8 @@ function neural_network(data, filter_size, body){
       radius = 102.5 * Math.pow(biggest_layer, -0.78),
       padding = 800 / biggest_layer,
       opacity_base = biggest_layer / 4,
+      hidden_node_opacity = 0.6,
+      node_hover_radius = 12,
       hidden_opacity_base = Math.pow(opacity_base, 1 / 30),
       hidden_opacity = Math.pow(0.1, hidden_opacity_base),
       link_value_exp = 6,
@@ -368,7 +370,7 @@ function neural_network(data, filter_size, body){
       .style("fill", "transparent")
       .style("stroke", "darkgray")
       .attr("id", function (d) {
-          return "__" + d.node
+          return "node_" + d.node
       })
       .style("stroke-width", stroke_width)
 
@@ -464,8 +466,8 @@ function neural_network(data, filter_size, body){
   // manual translation & manual height setting
   // for fitting within the page layout
   var sq_logo = svg.append("g")
-                .attr("transform",
-                "rotate(90) translate(135, -623) scale(" + neurons_at_last_layer / 30 + ", 1)")
+      .attr("transform",
+      "rotate(90) translate(135, -623) scale(" + neurons_at_last_layer / 30 + ", 1)")
   sq_logo.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height * 0.2 + ")")
@@ -492,37 +494,40 @@ function neural_network(data, filter_size, body){
   // approximation to bring cap-height to full font size
   var capHeightAdjust = 1.6;
   column.selectAll("text")
-        .data(function (d) {
-            return d.bits;
-        })
-        .enter()
-        .append("text")
-        .attr("y", function (e) {
-            return y(e.y0) * 0.2;
-        })
-        .text(function (e) {
-            return e.letter;
-        })
-        .attr("class", function (e) {
-            return "letter-bp letter-" + e.letter;
-        })
-        .attr("id", function (e) {
-            return "bp_" + e.node;
-        })
-        .style("text-anchor", "middle")
-        .style("font-family", "Orator Std Medium")
-        .style("pointer-events", "none")
-        .attr("textLength", x.rangeBand() * 0.7)
-        .attr("lengthAdjust", "spacingAndGlyphs")
-        // font sized for fitting
-        .attr("font-size", function (e) {
-            return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
-        })
-        .style("font-size", function (e) {
-            return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
-        });
+      .data(function (d) {
+          return d.bits;
+      })
+      .enter()
+      .append("text")
+      .attr("y", function (e) {
+          return y(e.y0) * 0.2;
+      })
+      .text(function (e) {
+          return e.letter;
+      })
+      .attr("class", function (e) {
+          return "letter-bp letter-" + e.letter;
+      })
+      .attr("id", function (e) {
+          return "bp_" + e.node;
+      })
+      .style("text-anchor", "middle")
+      .style("font-family", "Orator Std Medium")
+      .style("pointer-events", "none")
+      .attr("textLength", x.rangeBand() * 0.7)
+      .attr("lengthAdjust", "spacingAndGlyphs")
 
-  d3.select(body).selectAll(".tick").attr("visibility","hidden");
+      // font sized for fitting
+      .attr("font-size", function (e) {
+          return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
+      })
+      .style("font-size", function (e) {
+          return (y(e.y0) - y(e.y1)) * 0.18 * capHeightAdjust;
+      });
+
+  d3.select(body)
+    .selectAll(".tick")
+    .attr("visibility","hidden");
   // color the letters
   for (var lttr = 0; lttr < letters.length; lttr++){
     column.selectAll(".letter-" + letters[lttr]).style("fill", letter_colors[lttr])
@@ -535,156 +540,272 @@ function neural_network(data, filter_size, body){
       high_text,
       aft_text;
 
-
   d3.select(body).selectAll("circle")
-      .on("mouseenter", nodeEnter)
+      .on("mouseenter", nodeMouseEnter)
       .on("click", nodeClick)
-      .on("mouseout", nodeOut)
+      .on("mouseout", nodeMouseOut)
 
-
-  function getLowerChain(nodenum, chain) {
-      chain.push(nodenum);
+  // Recursive function to get the chain of nodes that connect to @param node
+  // from the lower part of the graph
+  function getLowerChain(node, chain) {
+      chain.push(node);
       for (var i = 0; i < links.length; i++) {
-          if (links[i].target.node == nodenum && links[i].boolean) {
-              var nodenumm = links[i].source.node;
-              getLowerChain(nodenumm, chain);
+          if (links[i].target.node == node && links[i].boolean) {
+              var source_node = links[i].source.node;
+              getLowerChain(source_node, chain);
+          }
+      }
+  }
+  // Recursive function to get the chain of nodes that connect to @param node
+  // from the upper part of the graph
+  function getUpperChain(node, chain) {
+      chain.push(node);
+      for (var i = 0; i < links.length; i++) {
+          if (links[i].source.node == node && links[i].boolean) {
+              var target_node = links[i].target.node;
+              getUpperChain(target_node, chain);
           }
       }
   }
 
-  function getUpperChain(nodenum, chain) {
-      chain.push(nodenum);
-      for (var i = 0; i < links.length; i++) {
-          if (links[i].source.node == nodenum && links[i].boolean) {
-              var nodenumm = links[i].target.node;
-              getUpperChain(nodenumm, chain);
-          }
-      }
-  }
-
-    function nodeOut(d) {
+    function nodeMouseOut(d) {
           d3.select(body).select("#tooltip").attr("class", "hidden");
           if (neuron_chain) {
-              if (neuron_chain.indexOf(d.node) == -1) {
-                  d3.select(this).attr("r", radius).style("opacity", 1).style("fill", "transparent");
+              if (neuron_chain.indexOf(d.node) < 0) {
+                  d3.select(this)
+                    .attr("r", radius)
+                    .style("opacity", 1)
+                    .style("fill", "transparent");
               } else {
-                  d3.select(this).attr("r", 9).style("opacity", 0.6).style("fill", selected_color);
+                  d3.select(this)
+                  .attr("r", 9)
+                  .style("opacity", hidden_node_opacity)
+                  .style("fill", selected_color);
               }
           } else {
-              d3.select(this).attr("r", radius).style("opacity", 1).style("fill", "transparent");
+              d3.select(this)
+              .attr("r", radius)
+              .style("opacity", 1)
+              .style("fill", "transparent");
           }
-          d3.select(body).select("#sqlogo_hover")
-              .attr("src", "sq_img/none.png")
+          // For future implementations
+          // d3.select(body).select("#sqlogo_hover")
+          //     .attr("src", "sq_img/none.png")
       }
 
 
-  function nodeEnter(d) {
+  function nodeMouseEnter(d) {
       if (d.node < (number_of_neurons - neurons_at_last_layer)) {
           selected_color = d3.select(this).style("fill");
-          d3.select(this).attr("r", 12).style("opacity", 0.5).style("fill", "white")
+
+          d3.select(this)
+            .attr("r", node_hover_radius)
+            .style("opacity", hidden_node_opacity)
+            .style("fill", "white")
+
           var top = d3.event.pageY - 140 + "px";
           var left = d3.event.pageX - 65 + "px";
-          d3.select("#tooltip").style("margin-top", top).style("margin-left", left).attr("class", "");
+
+          d3.select("#tooltip")
+            .style("margin-top", top)
+            .style("margin-left", left)
+            .attr("class", "");
+
           tool_text = filter_matches[d.node][0];
           tool_index = filter_matches[d.node][1];
+
           bef_text = tool_text.substring(tool_index - 100, tool_index);
           high_text = tool_text.substring(tool_index, tool_index + filter_size);
           aft_text = tool_text.substring(tool_index + filter_size, tool_index + 100 + filter_size);
+
           d3.select("#bef_span").text(bef_text);
-          d3.select("#tooltip_span").text(high_text).style('opacity', 5 * Math.pow(filter_matches[d.node][2], 5));
+          d3.select("#tooltip_span").text(high_text)
+                                    .style('opacity', 5 * Math.pow(filter_matches[d.node][2], 5));
           d3.select("#aft_span").text(aft_text);
-          d3.select("#sqlogo_hover")
-              .attr("src", function () {
-                  return "sq_img/" + d.node + ".png";
-              })
+
+          // future implementations
+          // d3.select("#sqlogo_hover")
+          //     .attr("src", function () {
+          //         return "sq_img/" + d.node + ".png";
+          //     })
       }
   }
 
+
+
+
   var sequence_fragment = d3.select(body).select("#sequence_p").text();
-  $("#sq_id").on("change", function () {
-      d3.select(body).select("#sequence_p").text(filter_matches[$(this).val() - 1][0]);
-      sequence_fragment = d3.select(body).select("#sequence_p").text();
+
+  $("#sq_id").on("change", function(){
+
       filter_matches_index = $(this).val() - 1;
-      var node_id = "#__" + neuron_chain[0];
+
+      d3.select(body)
+        .select("#sequence_p")
+        .text(filter_matches[filter_matches_index][0]);
+
+      sequence_fragment = d3.select(body)
+      .select("#sequence_p")
+      .text();
+
+
+      var node_id = "#node_" + neuron_chain[0];
       d3.select(body).select(node_id).each(nodeClick)
   })
 
   function nodeClick(d) {
       if (neuron_chain) {
-          d3.select(body).selectAll("image").style("opacity", 0);
-          d3.select(body).selectAll(".letter-bp").style("filter", "grayscale(0%)").style("opacity", 0.3).style("-webkit-filter", "grayscale(0%)");
+          d3.select(body)
+            .selectAll("image")
+            .style("opacity", 0);
+
+          d3.select(body)
+            .selectAll(".letter-bp")
+            .style("filter", "grayscale(0%)")
+            .style("opacity", hidden_node_opacity/2)
+            .style("-webkit-filter", "grayscale(0%)");
+
           $(".letter-bp").removeClass("letter-highlight")
-          d3.select(body).select("#__" + neuron_chain[0]).attr("r", radius).style("opacity", 1).style("fill", "transparent")
+
+          d3.select(body)
+            .select("#node_" + neuron_chain[0])
+            .attr("r", radius)
+            .style("opacity", 1)
+            .style("fill", "transparent")
+
           for (var i = 0; i < neuron_chain.length; i++) {
+
               var link_id = "#link_" + neuron_chain[i];
               var link_class = ".link_" + neuron_chain[i];
-              var node_id = "#__" + neuron_chain[i];
-              d3.select(body).selectAll(link_id).style("opacity", hidden_opacity)
-              d3.select(body).selectAll(link_class).style("opacity", hidden_opacity)
+              var node_id = "#node_" + neuron_chain[i];
+
+              d3.select(body)
+              .selectAll(link_id)
+              .style("opacity", hidden_opacity)
+              d3.select(body)
+              .selectAll(link_class)
+              .style("opacity", hidden_opacity)
+
               if (neuron_chain[i] < first_row_size) {
-                  d3.select(body).selectAll("#__" + neuron_chain[i]).attr("r", radius).style("opacity", 1).style("fill", "transparent");
+                  d3.select(body)
+                  .selectAll("#node_" + neuron_chain[i])
+                  .attr("r", radius)
+                  .style("opacity", 1)
+                  .style("fill", "transparent");
               } else {
-                  d3.select(body).selectAll("#__" + neuron_chain[i]).style("fill", "transparent");
+                  d3.select(body)
+                  .selectAll("#node_" + neuron_chain[i])
+                  .style("fill", "transparent");
               }
+
           }
       }
+
       neuron_chain = d.chain;
       if (number_of_neurons - d.node <= neurons_at_last_layer) {
-          d3.select(this).attr("r", 10).style("opacity", 0.5)
-          d3.select(body).select("#link_" + d.node).style("opacity", 1)
+          d3.select(this)
+          .attr("r", 10)
+          .style("opacity", hidden_node_opacity)
+          d3.select(body)
+          .select("#link_" + d.node)
+          .style("opacity", 1)
       }
-      var new_text_i = [];
+
+      var new_text_indexes = [];
       for (var i = 0; i < neuron_chain.length; i++) {
+
           if (neuron_chain[i] == d.node) {
-              d3.select(body).selectAll(".link_" + neuron_chain[i]).style("opacity", 1)
-              d3.select(body).selectAll("#link_" + neuron_chain[i]).style("opacity", 1)
+              d3.select(body)
+              .selectAll(".link_" + neuron_chain[i])
+              .style("opacity", 1)
+              d3.select(body).
+              selectAll("#link_" + neuron_chain[i])
+              .style("opacity", 1)
           } else if (neuron_chain[i] < d.node) {
-              d3.select(body).selectAll("#link_" + neuron_chain[i]).style("opacity", 1)
+              d3.select(body)
+              .selectAll("#link_" + neuron_chain[i])
+              .style("opacity", 1)
           }
 
-          d3.select(body).selectAll("#__" + neuron_chain[i]).style("fill", "white")
+          d3.select(body)
+          .selectAll("#node_" + neuron_chain[i])
+          .style("fill", "white")
+
           if (neuron_chain[i] < first_row_size) {
-              d3.select(body).selectAll("#__" + neuron_chain[i]).attr("r", 9).style("opacity", 0.6).style("fill", function () {
+
+              d3.select(body)
+              .selectAll("#node_" + neuron_chain[i])
+              .attr("r", 9)
+              .style("opacity", hidden_node_opacity)
+              .style("fill", function () {
                   return randomColorGenerator(i)
               });
-              d3.select(body).select("#___" + neuron_chain[i]).style("opacity", 1);
-              new_text_i.push([filter_matches[filter_matches_index][2][neuron_chain[i]], i]);
+
+              d3.select(body)
+              .select("#node__" + neuron_chain[i])
+              .style("opacity", 1);
+
+              new_text_indexes.push([filter_matches[filter_matches_index][2][neuron_chain[i]], i]);
+
           } else {
-              d3.select(body).selectAll("#__" + neuron_chain[i]).style("fill", "white");
-              d3.select(body).select("#bp_" + neuron_chain[i]).style("filter", "grayscale(100%)").style("opacity", 1).style("-webkit-filter", "grayscale(100%)");
+              d3.select(body)
+              .selectAll("#node_" + neuron_chain[i])
+              .style("fill", "white");
+              d3.select(body)
+              .select("#bp_" + neuron_chain[i])
+              .style("filter", "grayscale(100%)")
+              .style("opacity", 1)
+              .style("-webkit-filter", "grayscale(100%)");
           }
       }
 
-      new_text_i.sort(function (a, b) {
+      new_text_indexes.sort(function (a, b) {
           return a[0] - b[0];
       });
 
 
-      d3.select(body).selectAll("#sequence_p span").remove();
-      d3.select(body).select("#sequence_p").text("");
+      d3.select(body)
+      .selectAll("#sequence_p span")
+      .remove();
+      d3.select(body)
+      .select("#sequence_p")
+      .text("");
+
       var sequence_index = 0;
-      for (var i = 0; i < new_text_i.length; i++) {
+      for (var i = 0; i < new_text_indexes.length; i++) {
 
-          if (new_text_i[i][0] >= sequence_index) {
-              d3.select(body).select("#sequence_p").append("span").text(sequence_fragment.substring(sequence_index, new_text_i[i][0]));
+          if (new_text_indexes[i][0] >= sequence_index) {
+
+              d3.select(body)
+                .select("#sequence_p").
+                append("span")
+                .text(sequence_fragment.substring(sequence_index, new_text_indexes[i][0]));
+
               d3.select(body).select("#sequence_p")
-                  .append("span")
-                  .attr("class", "highlighted")
-                  .style("color", function () {
-                      return randomColorGenerator(new_text_i[i][1]);
-                  })
-                  .style("opacity", filter_matches[filter_matches_index][1][sequence_fragment] / 20)
-                  .text(sequence_fragment.substring(new_text_i[i][0], new_text_i[i][0] + 10));
+                .append("span")
+                .attr("class", "highlighted")
+                .style("color", function () {
+                    return randomColorGenerator(new_text_indexes[i][1]);
+                })
+                .style("opacity", filter_matches[filter_matches_index][1][sequence_fragment] / 20)
+                .text(sequence_fragment.substring(new_text_indexes[i][0], new_text_indexes[i][0] + 10));
+
           } else {
-              sequence_index = sequence_fragment.indexOf(d3.select(body).select("#sequence_p span:last-child").text());
-              d3.select(body).select("#sequence_p span:last-child").remove();
-              d3.select(body).select("#sequence_p").append("span").attr("class", "highlighted").text(sequence_fragment.substring(sequence_index, 10 + new_text_i[i][0]));
+              var last_span_txt = d3.select(body).select("#sequence_p span:last-child").text()
+              sequence_index = sequence_fragment.indexOf(last_span_txt);
+              d3.select(body).select("#sequence_p span:last-child")
+              .remove();
+              d3.select(body).select("#sequence_p")
+              .append("span")
+              .attr("class", "highlighted")
+              .text(sequence_fragment.substring(sequence_index, 10 + new_text_indexes[i][0]));
           }
-          sequence_index = 10 + new_text_i[i][0];
+          sequence_index = 10 + new_text_indexes[i][0];
       }
-      d3.select(body).select("#sequence_p").append("span").text(sequence_fragment.substring(sequence_index, sequence_fragment.length - 1));
-
-
+      d3.select(body)
+      .select("#sequence_p")
+      .append("span")
+      .text(sequence_fragment.substring(sequence_index, sequence_fragment.length - 1));
   }
 
 }
