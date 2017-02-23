@@ -35,14 +35,7 @@ var init = function() {
 // inputs
 //
 var inputs = {
-  sequence1: {type:"integer",
-  event: function(evt){
-     mod.value = evt.detail
-     post_value(mod.value)
-   }
  }
-
-}
 //
 // outputs
 //
@@ -439,6 +432,7 @@ function neural_network(data, filter_size, body){
           return d3.ascending(a.bits, b.bits);
       });
   }
+
   sequence_logo.forEach(function (d) {
       var y0 = 0;
       d.bits = d.map(function (entry) {

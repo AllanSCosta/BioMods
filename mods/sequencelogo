@@ -13,22 +13,14 @@ var name = 'sequence logo'
 // initialization
 //
 var init = function() {
-  mod.value = 0;
-  mod.emitter = 1;
+  mod.data = {}
  }
 //
 // inputs
 //
 var inputs = {
 
-  sequence1: {type:"integer",
-  event: function(evt){
-     mod.value = evt.detail
-     post_value(mod.value)
-   }
  }
-
-}
 //
 // outputs
 //
@@ -42,6 +34,21 @@ var interface = function(div){
   // change parameters buttons
   //
   mod.div = div
+  //
+  // on-screen drawing canvas
+  //
+
+
+  var os_svg = d3.select(div).append("svg")
+            .attr("height", 250)
+            .attr("width", 350)
+  os_svg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "white");
+  mod.os_svg = os_svg
+
+  div.appendChild(document.createElement('br'))
   //
   // file input control
   //
@@ -109,7 +116,12 @@ var interface = function(div){
               })
            win.document.body.appendChild(btn)
         win.document.body.appendChild(document.createElement('br'))
-        sequenceLogo(mod.data, win.document.body);
+        var svg = d3.select(win.document.body)
+                    .append("svg")
+                    .attr("height", 350)
+                    .attr("width", 650)
+        win.document.body.appendChild(document.createElement('br'))
+        sequenceLogo(mod.data, svg);
         })
      div.appendChild(btn)
   div.appendChild(document.createTextNode(' '))
@@ -135,6 +147,7 @@ function json_handler(event) {
    var lines = event.target.result;
    var data = JSON.parse(lines);
    mod.data = data;
+   sequenceLogo(mod.data, mod.os_svg);
 }
 
 
@@ -156,188 +169,7 @@ bp_database = {
         'type': 'pyrimidine'
     },
 }
-aa_database = {
-    'F': {
-        'color': "#f44336",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'aliphatic',
-        'essentiality': 'essential',
-        'polarity': 'nonpolar',
-        'name': 'phenylalanine',
-    },
-    'I': {
-        'color': "#E91E63",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'aliphatic',
-        'essentiality': 'essential',
-        'polarity': 'nonpolar',
-        'name': 'isoleucine',
-    },
-    'L': {
-        'color': "#9C27B0",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'aliphatic',
-        'essentiality': 'essential',
-        'polarity': 'nonpolar',
-        'name': 'leucine',
-    },
-    'V': {
-        'color': "#673AB7",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'aliphatic',
-        'essentiality': 'essential',
-        'polarity': 'nonpolar',
-        'name': 'valine',
-    },
-    'A': {
-        'color': "#3F51B5",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'aliphatic',
-        'essentiality': 'natural',
-        'polarity': 'nonpolar',
-        'name': 'alanine',
-    },
-    'W': {
-        'color': "#2196F3",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'sulfur',
-        'essentiality': 'essential',
-        'polarity': 'nonpolar',
-        'name': 'tryptophan',
-    },
-    'M': {
-        'color': "#03A9F4",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'sulfur',
-        'essentiality': 'essential',
-        'polarity': 'nonpolar',
-        'name': 'methionine',
-    },
-    'C': {
-        'color': "#00BCD4",
-        'charge': 'nonpolar',
-        'solubility': 'hydrophobic',
-        'g_property': 'sulfur',
-        'essentiality': 'natural',
-        'polarity': 'nonpolar',
-        'name': 'cysteine',
-    },
-    'P': {
-        'color': "#009688",
-        'charge': 'nonpolar',
-        'solubility': 'neutral',
-        'g_property': 'acidic',
-        'essentiality': 'natural',
-        'polarity': 'nonpolar',
-        'name': 'proline',
-    },
-    'G': {
-        'color': "#4CAF50",
-        'charge': 'nonpolar',
-        'solubility': 'neutral',
-        'g_property': 'hydroxyl',
-        'essentiality': 'natural',
-        'polarity': 'nonpolar',
-        'name': 'glycine',
-    },
-    'Y': {
-        'color': "#8BC34A",
-        'charge': 'uncharged',
-        'solubility': 'neutral',
-        'g_property': 'hydroxyl',
-        'essentiality': 'natural',
-        'polarity': 'polar',
-        'name': 'tyrosine',
-    },
-    'T': {
-        'color': "#CDDC39",
-        'charge': 'uncharged',
-        'solubility': 'neutral',
-        'g_property': 'hydroxyl',
-        'essentiality': 'essential',
-        'polarity': 'polar',
-        'name': 'threonine',
-    },
-    'S': {
-        'color': "#FFEB3B",
-        'charge': 'uncharged',
-        'solubility': 'neutral',
-        'g_property': 'hydroxyl',
-        'essentiality': 'natural',
-        'polarity': 'polar',
-        'name': 'serine',
-    },
-    'H': {
-        'color': "#FFC107",
-        'charge': 'charged',
-        'solubility': 'neutral',
-        'g_property': 'basic',
-        'essentiality': 'essential',
-        'polarity': 'polar',
-        'name': 'histidine',
-    },
-    'K': {
-        'color': "#FF9800",
-        'charge': 'charged',
-        'solubility': 'hydrophilic',
-        'g_property': 'basic',
-        'essentiality': 'essential',
-        'polarity': 'polar',
-        'name': 'lysine',
-    },
-    'R': {
-        'color': "#FF5722",
-        'charge': 'charged',
-        'solubility': 'hydrophilic',
-        'g_property': 'basic',
-        'essentiality': 'natural',
-        'polarity': 'polar',
-        'name': 'arginine',
-    },
-    'E': {
-        'color': "#9E9E9E",
-        'charge': 'uncharged',
-        'solubility': 'hydrophilic',
-        'g_property': 'acidic',
-        'essentiality': 'natural',
-        'polarity': 'polar',
-        'name': 'glutamic acid',
-    },
-    'D': {
-        'color': "#607D8B",
-        'charge': 'uncharged',
-        'solubility': 'hydrophilic',
-        'g_property': 'acidic',
-        'essentiality': 'natural',
-        'polarity': 'polar',
-        'name': 'aspartic acid',
-    },
-    'Q': {
-        'color': "#795548",
-        'charge': 'uncharged',
-        'solubility': 'hydrophilic',
-        'g_property': 'amide',
-        'essentiality': 'natural',
-        'polarity': 'polar',
-        'name': 'glutamine',
-    },
-    'N': {
-        'color': "#FFFDE7",
-        'charge': 'uncharged',
-        'solubility': 'hydrophilic',
-        'g_property': 'amide',
-        'essentiality': 'natural',
-        'polarity': 'polar',
-        'name': 'asparagine',
-    }
-}
+
 var bp_colors = {
     "A": "#66BB6A",
     "C": "#2196F3",
@@ -353,38 +185,29 @@ var base_pairs = true;
 var filter_type = "bp";
 
 
-function sequenceLogo(input_data, body) {
+
+function sequenceLogo(input_data, svg) {
 
       input_data = input_data['sq_logo']
 
-      var margin = {
-              top: 300,
-              right: 300,
-              bottom: 300,
-              left: 400
-          },
-          width = 1500 - margin.left - margin.right,
-          height = 1000 - margin.top - margin.bottom;
 
-      var svg = d3.select(body).append("svg")
-              .attr("height", height)
-              .attr("width", width)
-      var label_scale = 0.195
+      var width = svg[0][0].clientWidth - 50,
+      height = svg[0][0].clientHeight - 50;
+
       // Set up Sequence Logo
       var x = d3.scale.ordinal()
           .rangeRoundBands([0, width], .1);
       var y = d3.scale.linear()
           .range([height, 0]);
       var labels = d3.scale.linear()
-          .range([height * label_scale, 0]);
+          .range([height, 0]);
       var xAxis = d3.svg.axis()
           .scale(x)
-          .orient("bottom").ticks(0);
+          .orient("bottom").ticks(1);
       var yAxis = d3.svg.axis()
           .scale(labels)
           .orient("left")
           .ticks(5);
-
 
 
       var number_of_variables = 4
@@ -448,11 +271,15 @@ function sequenceLogo(input_data, body) {
       } else {
           labels.domain([0, 4.3]);
       }
+
+
       var sq_logo = svg.append("g").attr("transform", "translate(30,15)")
+
       sq_logo.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + height + ")")
               .call(xAxis);
+
       sq_logo.append("g")
               .attr("class", "y axis")
               .call(yAxis)
@@ -460,7 +287,10 @@ function sequenceLogo(input_data, body) {
               .attr("y", 6)
               .attr("dy", ".71em")
               .style("text-anchor", "end")
-              .text("Bits");
+
+      sq_logo.selectAll(".axis path")
+        .style({ 'stroke': 'Black', 'fill': 'none', 'stroke-width': '1px'})
+
       var column = sq_logo.selectAll(".sequence-column")
               .data(input_data)
               .enter()
@@ -469,9 +299,10 @@ function sequenceLogo(input_data, body) {
                   return "translate(" + (x(i) + (x.rangeBand() / 2)) + ",0)";
               })
               .attr("class", "sequence-column");
-      var capHeightAdjust = 1.43; // approximation to bring cap-height to full font size
-      column
-              .selectAll("text")
+
+      // approximation to bring cap-height to full font size
+      var capHeightAdjust = 1.43;
+          column.selectAll("text")
               .data(function (d) {
                   return d.bits;
               })
@@ -484,6 +315,8 @@ function sequenceLogo(input_data, body) {
                   return e.letter;
               })
               .attr("class", "letter-bp")
+              .style("text-anchor", "middle")
+              .style("font-family", "Orator Std Medium")
               .style("fill", function (e) {
                   if (base_pairs) {
                       return bp_colors[e.letter];
@@ -515,7 +348,6 @@ function sequenceLogo(input_data, body) {
                   d3.select("#tooltip").attr("class", "hidden");
               })
               .style("text-anchor", "middle")
-              .style("font-family", "Code")
               .attr("textLength", x.rangeBand() * 0.9)
               .attr("lengthAdjust", "spacingAndGlyphs")
               .attr("font-size", function (e) {
