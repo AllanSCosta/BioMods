@@ -66,19 +66,19 @@ var interface = function(div){
         })
      div.appendChild(file)
      mod.file = file
-  //
-  // modify the filter size
-  //
-  div.appendChild(document.createTextNode('filter size: '))
-  input = document.createElement('input')
-     input.type = 'text'
-     input.size = 3
-     input.value = 10
-     input.addEventListener('keydown',function(evt){
-       mod.filter_size = input.value
-     })
-     div.appendChild(input)
-  div.appendChild(document.createElement('br'))
+  // //
+  // // modify the filter size
+  // //
+  // div.appendChild(document.createTextNode('filter size: '))
+  // input = document.createElement('input')
+  //    input.type = 'text'
+  //    input.size = 3
+  //    input.value = 10
+  //    input.addEventListener('keydown',function(evt){
+  //      mod.filter_size = input.value
+  //    })
+  //    div.appendChild(input)
+  // div.appendChild(document.createElement('br'))
   //
   // off-screen image canvas
   //
@@ -147,10 +147,17 @@ function json_handler(event) {
    var lines = event.target.result;
    var data = JSON.parse(lines);
    mod.data = data;
+   removeSequenceLogo(mod.os_svg)
    sequenceLogo(mod.data, mod.os_svg);
 }
 
 
+var bp_colors = {
+    "A": "#66BB6A",
+    "C": "#2196F3",
+    "T": "#E57373",
+    "G": "#FFEE58"
+};
 bp_database = {
     'A': {
         'name': 'adenine',
@@ -169,309 +176,343 @@ bp_database = {
         'type': 'pyrimidine'
     },
 }
-
-var bp_colors = {
-    "A": "#66BB6A",
-    "C": "#2196F3",
-    "T": "#E57373",
-    "G": "#FFEE58"
-};
-function colores(n) {
-    var colores_g = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
-    return colores_g[n % colores_g.length];
+aa_database = {
+    'F': {
+        'color': "#f44336",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'aliphatic',
+        'essentiality': 'essential',
+        'polarity': 'nonpolar',
+        'name': 'phenylalanine',
+    },
+    'I': {
+        'color': "#E91E63",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'aliphatic',
+        'essentiality': 'essential',
+        'polarity': 'nonpolar',
+        'name': 'isoleucine',
+    },
+    'L': {
+        'color': "#9C27B0",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'aliphatic',
+        'essentiality': 'essential',
+        'polarity': 'nonpolar',
+        'name': 'leucine',
+    },
+    'V': {
+        'color': "#673AB7",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'aliphatic',
+        'essentiality': 'essential',
+        'polarity': 'nonpolar',
+        'name': 'valine',
+    },
+    'A': {
+        'color': "#3F51B5",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'aliphatic',
+        'essentiality': 'natural',
+        'polarity': 'nonpolar',
+        'name': 'alanine',
+    },
+    'W': {
+        'color': "#2196F3",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'sulfur',
+        'essentiality': 'essential',
+        'polarity': 'nonpolar',
+        'name': 'tryptophan',
+    },
+    'M': {
+        'color': "#03A9F4",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'sulfur',
+        'essentiality': 'essential',
+        'polarity': 'nonpolar',
+        'name': 'methionine',
+    },
+    'C': {
+        'color': "#00BCD4",
+        'charge': 'nonpolar',
+        'solubility': 'hydrophobic',
+        'g_property': 'sulfur',
+        'essentiality': 'natural',
+        'polarity': 'nonpolar',
+        'name': 'cysteine',
+    },
+    'P': {
+        'color': "#009688",
+        'charge': 'nonpolar',
+        'solubility': 'neutral',
+        'g_property': 'acidic',
+        'essentiality': 'natural',
+        'polarity': 'nonpolar',
+        'name': 'proline',
+    },
+    'G': {
+        'color': "#4CAF50",
+        'charge': 'nonpolar',
+        'solubility': 'neutral',
+        'g_property': 'hydroxyl',
+        'essentiality': 'natural',
+        'polarity': 'nonpolar',
+        'name': 'glycine',
+    },
+    'Y': {
+        'color': "#8BC34A",
+        'charge': 'uncharged',
+        'solubility': 'neutral',
+        'g_property': 'hydroxyl',
+        'essentiality': 'natural',
+        'polarity': 'polar',
+        'name': 'tyrosine',
+    },
+    'T': {
+        'color': "#CDDC39",
+        'charge': 'uncharged',
+        'solubility': 'neutral',
+        'g_property': 'hydroxyl',
+        'essentiality': 'essential',
+        'polarity': 'polar',
+        'name': 'threonine',
+    },
+    'S': {
+        'color': "#FFEB3B",
+        'charge': 'uncharged',
+        'solubility': 'neutral',
+        'g_property': 'hydroxyl',
+        'essentiality': 'natural',
+        'polarity': 'polar',
+        'name': 'serine',
+    },
+    'H': {
+        'color': "#FFC107",
+        'charge': 'charged',
+        'solubility': 'neutral',
+        'g_property': 'basic',
+        'essentiality': 'essential',
+        'polarity': 'polar',
+        'name': 'histidine',
+    },
+    'K': {
+        'color': "#FF9800",
+        'charge': 'charged',
+        'solubility': 'hydrophilic',
+        'g_property': 'basic',
+        'essentiality': 'essential',
+        'polarity': 'polar',
+        'name': 'lysine',
+    },
+    'R': {
+        'color': "#FF5722",
+        'charge': 'charged',
+        'solubility': 'hydrophilic',
+        'g_property': 'basic',
+        'essentiality': 'natural',
+        'polarity': 'polar',
+        'name': 'arginine',
+    },
+    'E': {
+        'color': "#9E9E9E",
+        'charge': 'uncharged',
+        'solubility': 'hydrophilic',
+        'g_property': 'acidic',
+        'essentiality': 'natural',
+        'polarity': 'polar',
+        'name': 'glutamic acid',
+    },
+    'D': {
+        'color': "#607D8B",
+        'charge': 'uncharged',
+        'solubility': 'hydrophilic',
+        'g_property': 'acidic',
+        'essentiality': 'natural',
+        'polarity': 'polar',
+        'name': 'aspartic acid',
+    },
+    'Q': {
+        'color': "#795548",
+        'charge': 'uncharged',
+        'solubility': 'hydrophilic',
+        'g_property': 'amide',
+        'essentiality': 'natural',
+        'polarity': 'polar',
+        'name': 'glutamine',
+    },
+    'N': {
+        'color': "#FFFDE7",
+        'charge': 'uncharged',
+        'solubility': 'hydrophilic',
+        'g_property': 'amide',
+        'essentiality': 'natural',
+        'polarity': 'polar',
+        'name': 'asparagine',
+    }
 }
 
-var base_pairs = true;
-var filter_type = "bp";
-
-
+function removeSequenceLogo(svg) {
+  svg.selectAll("g").remove()
+}
 
 function sequenceLogo(input_data, svg) {
 
-      input_data = input_data['sq_logo']
+  var base_pairs = true;
+  var filter_type = "bp";
 
-
-      var width = svg[0][0].clientWidth - 50,
+  input_data = input_data['sq_logo']
+  var width = svg[0][0].clientWidth - 50,
       height = svg[0][0].clientHeight - 50;
 
-      // Set up Sequence Logo
-      var x = d3.scale.ordinal()
-          .rangeRoundBands([0, width], .1);
-      var y = d3.scale.linear()
-          .range([height, 0]);
-      var labels = d3.scale.linear()
-          .range([height, 0]);
-      var xAxis = d3.svg.axis()
-          .scale(x)
-          .orient("bottom").ticks(1);
-      var yAxis = d3.svg.axis()
-          .scale(labels)
-          .orient("left")
-          .ticks(5);
+  // Set up Sequence Logo
+  var x = d3.scale.ordinal()
+      .rangeRoundBands([0, width], .1);
+  var y = d3.scale.linear()
+      .range([height, 0]);
+  var labels = d3.scale.linear()
+      .range([height, 0]);
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom").ticks(1);
+  var yAxis = d3.svg.axis()
+      .scale(labels)
+      .orient("left")
+      .ticks(5);
 
 
-      var number_of_variables = 4
-
-      for (var col = 0; col < input_data.length; col++) {
-          var sq_column = input_data[col];
-          var bits_sum = 0;
-          for (var letter = 0; letter < sq_column.length; letter++) {
-              if (sq_column[letter]['bits'] < 0) {
-                  sq_column[letter]['bits'] = 0;
-              }
-              bits_sum += sq_column[letter]['bits'];
-              // Checks if the data is of aa or bp
-              if (!bp_database[sq_column[letter]['letter']]) {
-                  base_pairs = false;
-                  d3.selectAll(".aa_option").style("display", "block");
-                  d3.selectAll(".base_pair_option").style("display", "none");
-                  //    d3.select("sq_filter").text("Aminoacid");
-              }
+  var number_of_variables = 4
+  for (var col = 0; col < input_data.length; col++) {
+      var sq_column = input_data[col];
+      var bits_sum = 0;
+      for (var letter = 0; letter < sq_column.length; letter++) {
+          if (sq_column[letter]['bits'] < 0) {
+              sq_column[letter]['bits'] = 0;
           }
-          var entropy = 0;
-          for (var letter = 0; letter < sq_column.length; letter++) {
-              sq_column[letter]['bits'] = (sq_column[letter]['bits']) / bits_sum;
-              if (sq_column[letter]['bits'] > 0) {
-                  entropy += -(sq_column[letter]['bits'] * Math.log2(sq_column[letter]['bits']));
-              }
-          }
-          var scale = Math.log2(number_of_variables) - entropy;
-          for (var letter = 0; letter < sq_column.length; letter++) {
-              sq_column[letter]['bits'] *= scale;
+          bits_sum += sq_column[letter]['bits'];
+          // Checks if the data is of aa or bp
+          if (!bp_database[sq_column[letter]['letter']]) {
+              base_pairs = false;
+              d3.selectAll(".aa_option").style("display", "block");
+              d3.selectAll(".base_pair_option").style("display", "none");
+              //    d3.select("sq_filter").text("Aminoacid");
           }
       }
+      var entropy = 0;
+      for (var letter = 0; letter < sq_column.length; letter++) {
+          sq_column[letter]['bits'] = (sq_column[letter]['bits']) / bits_sum;
+          if (sq_column[letter]['bits'] > 0) {
+              entropy += -(sq_column[letter]['bits'] * Math.log2(sq_column[letter]['bits']));
+          }
+      }
+      var scale = Math.log2(number_of_variables) - entropy;
+      for (var letter = 0; letter < sq_column.length; letter++) {
+          sq_column[letter]['bits'] *= scale;
+      }
+  }
 
-      input_data.forEach(function (d) {
-          var y0 = 0;
-          d.bits = d.map(function (entry) {
-              return {
-                  bits: entry.bits,
-                  letter: entry.letter,
-                  node: entry.node,
-                  y0: y0,
-                  y1: y0 += +entry.bits
-              };
+  input_data.forEach(function (d) {
+      var y0 = 0;
+      d.bits = d.map(function (entry) {
+          return {
+              bits: entry.bits,
+              letter: entry.letter,
+              node: entry.node,
+              y0: y0,
+              y1: y0 += +entry.bits
+          };
+      })
+      d.bitTotal = d.bits[d.bits.length - 1].y1;
+  });
+  for (var i = 0; i < input_data.length; i++) {
+      input_data[i].bits.sort(function (a, b) {
+          return d3.ascending(b.bits, a.bits);
+      });
+  }
+  x.domain(input_data.map(function (d, i) {
+      return i;
+  }));
+  var maxBits = d3.max(input_data, function (d) {
+      return d.bitTotal
+  });
+  y.domain([0, Math.log2(number_of_variables)]);
+
+  var labels_range = base_pairs ? 2 : 4.3;
+  labels.domain([0, labels_range]);
+
+  var sq_logo = svg.append("g")
+           .attr("transform", "translate(30,15)")
+           .attr('id', "sequence_logo")
+
+  sq_logo.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+  sq_logo.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+          .append("text")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+
+  sq_logo.selectAll(".axis path")
+         .style({ 'stroke': 'Black', 'fill': 'none', 'stroke-width': '1px'})
+
+  sq_logo.selectAll(".axis")
+         .style("font-family", "Orator Std Medium")
+
+  var column = sq_logo.selectAll(".sequence-column")
+          .data(input_data)
+          .enter()
+          .append("g")
+          .attr("transform", function (d, i) {
+              return "translate(" + (x(i) + (x.rangeBand() / 2)) + ",0)";
           })
-          d.bitTotal = d.bits[d.bits.length - 1].y1;
-      });
-      for (var i = 0; i < input_data.length; i++) {
-          input_data[i].bits.sort(function (a, b) {
-              return d3.ascending(b.bits, a.bits);
-          });
-      }
-      x.domain(input_data.map(function (d, i) {
-          return i;
-      }));
-      var maxBits = d3.max(input_data, function (d) {
-          return d.bitTotal
-      });
-      y.domain([0, Math.log2(number_of_variables)]);
-      if (base_pairs) {
-          labels.domain([0, 2]);
-      } else {
-          labels.domain([0, 4.3]);
-      }
+          .attr("class", "sequence-column");
 
+  // approximation to bring cap-height to full font size
+  var capHeightAdjust = 1.43;
 
-      var sq_logo = svg.append("g").attr("transform", "translate(30,15)")
-
-      sq_logo.append("g")
-              .attr("class", "x axis")
-              .attr("transform", "translate(0," + height + ")")
-              .call(xAxis);
-
-      sq_logo.append("g")
-              .attr("class", "y axis")
-              .call(yAxis)
-              .append("text")
-              .attr("y", 6)
-              .attr("dy", ".71em")
-              .style("text-anchor", "end")
-
-      sq_logo.selectAll(".axis path")
-        .style({ 'stroke': 'Black', 'fill': 'none', 'stroke-width': '1px'})
-
-      var column = sq_logo.selectAll(".sequence-column")
-              .data(input_data)
-              .enter()
-              .append("g")
-              .attr("transform", function (d, i) {
-                  return "translate(" + (x(i) + (x.rangeBand() / 2)) + ",0)";
-              })
-              .attr("class", "sequence-column");
-
-      // approximation to bring cap-height to full font size
-      var capHeightAdjust = 1.43;
-          column.selectAll("text")
-              .data(function (d) {
-                  return d.bits;
-              })
-              .enter()
-              .append("text")
-              .attr("y", function (e) {
-                  return y(e.y0);
-              })
-              .text(function (e) {
-                  return e.letter;
-              })
-              .attr("class", "letter-bp")
-              .style("text-anchor", "middle")
-              .style("font-family", "Orator Std Medium")
-              .style("fill", function (e) {
-                  if (base_pairs) {
-                      return bp_colors[e.letter];
-                  } else {
-                      return aa_database[e.letter]['color'];
-                  }
-              })
-              .on("click", function (e) {
-                  d3.select(this).style("opacity", 1)
-                  var top = d3.event.pageY - 50 + "px";
-                  var left = d3.event.pageX - 5 + "px";
-                  d3.select("#tooltip").style("margin-top", top).style("margin-left", left).attr("class", "");
-                  d3.select("#tooltip_span").text(parseInt(e.bits * 10000) / 10000);
-
-                  if (base_pairs) {
-                      d3.select("#tooltip_name").text(toTitleCase(bp_database[e.letter]['name']));
-                      d3.select("#tooltip_bptype").text(toTitleCase(bp_database[e.letter]['type']));
-                  } else {
-                      d3.select("#tooltip_name").text(toTitleCase(aa_database[e.letter]['name']));
-                      d3.select("#tooltip_charge").text(toTitleCase(aa_database[e.letter]['charge']));
-                      d3.select("#tooltip_solubility").text(toTitleCase(aa_database[e.letter]['solubility']));
-                      d3.select("#tooltip_g_property").text(toTitleCase(aa_database[e.letter]['g_property']));
-                      d3.select("#tooltip_essentiality").text(toTitleCase(aa_database[e.letter]['essentiality']));
-                      d3.select("#tooltip_polarity").text(toTitleCase(aa_database[e.letter]['polarity']));
-                  }
-              })
-              .on("mouseout", function (d) {
-                  d3.select(this).style("opacity", 0.5)
-                  d3.select("#tooltip").attr("class", "hidden");
-              })
-              .style("text-anchor", "middle")
-              .attr("textLength", x.rangeBand() * 0.9)
-              .attr("lengthAdjust", "spacingAndGlyphs")
-              .attr("font-size", function (e) {
-                  return (y(e.y0) - y(e.y1)) * capHeightAdjust;
-              })
-              .style("font-size", function (e) {
-                  return (y(e.y0) - y(e.y1)) * capHeightAdjust;
-              })
-
-
-
-
+      column.selectAll("text")
+          .data(function (d) {
+              return d.bits;
+          })
+          .enter()
+          .append("text")
+          .attr("y", function (e) {
+              return y(e.y0);
+          })
+          .text(function (e) {
+              return e.letter;
+          })
+          .attr("class", "letter-bp")
+          .style("text-anchor", "middle")
+          .style("font-family", "Orator Std Medium")
+          .style("fill", function (e) {
+              return base_pairs ? bp_colors[e.letter] :
+                     aa_database[e.letter]['color'];
+          })
+          .style("text-anchor", "middle")
+          .attr("textLength", x.rangeBand() * 0.9)
+          .attr("lengthAdjust", "spacingAndGlyphs")
+          .attr("font-size", function (e) {
+              return (y(e.y0) - y(e.y1)) * capHeightAdjust;
+          })
+          .style("font-size", function (e) {
+              return (y(e.y0) - y(e.y1)) * capHeightAdjust;
+          })
 
 }
-function labeling() {
-  $("#sq_filter").on("change", function () {
-      d3.selectAll(".label").remove();
-      var selected_filter = $("#sq_filter option:selected").text();
-      if (base_pairs) {
-          if (selected_filter == "Each Letter") {
-              d3.selectAll(".letter-bp").style("fill", function (d, i) {
-                  return colores(i);
-              })
-          } else if (selected_filter == "Purines-Pyrimidines") {
-              d3.selectAll(".letter-bp").style("fill", function (d, i) {
-                  if (d3.select(this).text() == "A" || d3.select(this).text() == "G") {
-                      return "lightblue"
-                  } else {
-                      return "orange"
-                  }
-              })
-          } else if (selected_filter == "A-T-G-C") {
-              d3.selectAll(".letter-bp").style("fill", function (d, i) {
-                  return bp_colors[d3.select(this).text()];
-              })
-          }
-      } else {
-          if (selected_filter == "Aminoacid") {
-              d3.selectAll(".letter-bp").style("fill", function (d) {
-                  return aa_database[d.letter]['color'];
-              })
-          } else if (selected_filter == "Charge") {
-              $("#filter_pallete").append(
-                      "<div class='label'><div class='label_color' style='background-color:#2196F3;'></div><div class='label_p'>Charged</div></div><div class='label'><div class='label_color' style='background-color:#f44336;'></div><div class='label_p'>Uncharged</div></div><div class='label'><div class='label_color' style='background-color:#90A4AE;'></div><div class='label_p'>Nonpolar</div></div>"
-              );
 
-              d3.selectAll(".letter-bp").style("fill", function (d) {
-                  if (aa_database[d3.select(this).text()]['charge'] == 'charged') {
-                      return "#2196F3";
-                  } else if (aa_database[d3.select(this).text()]['charge'] == 'uncharged') {
-                      return "#f44336"
-                  } else {
-                      return "#90A4AE";
-                  }
-              })
-          } else if (selected_filter == "Solubility") {
-              $("#filter_pallete").append(
-                      "<div class='label'><div class='label_color' style='background-color:#2196F3;'></div><div class='label_p'>Hydrophilic</div></div><div class='label'><div class='label_color' style='background-color:#ef5350;'></div><div class='label_p'>Hydrophobic</div></div><div class='label'><div class='label_color' style='background-color:#66BB6A;'></div><div class='label_p'>Neutral</div></div>"
-              );
-
-              d3.selectAll(".letter-bp").style("fill", function (d) {
-                  if (aa_database[d3.select(this).text()]['solubility'] == 'hydrophilic') {
-                      return "#2196F3";
-                  } else if (aa_database[d3.select(this).text()]['solubility'] == 'hydrophobic') {
-                      return "#ef5350";
-                  } else {
-                      return "#66BB6A";
-                  }
-              })
-          } else if (selected_filter == "General Properties") {
-              $("#filter_pallete").append(
-                      "<div class='label'><div class='label_color' style='background-color:#90A4AE;' ></div><div class='label_p'>Aliphatic</div></div><div class='label'><div class='label_color' style='background-color:#FFEE58;'></div><div class='label_p'>Acidic</div></div><div class='label'><div class='label_color' style='background-color:#9575cd;'></div><div class='label_p'>Basic</div></div><div class='label'><div class='label_color' style='background-color:#2196F3;'></div><div class='label_p'>Amide</div></div><div class='label'><div class='label_color' style='background-color:#FB8C00;'></div><div class='label_p'>Sulfur</div></div><div class='label'><div class='label_color' style='background-color:#009688;'></div><div class='label_p'>Hydroxyl</div></div>"
-              )
-              d3.selectAll(".letter-bp").style("fill", function (d) {
-                  if (aa_database[d.letter]['g_property'] == 'aliphatic') {
-                      return "#90A4AE";
-                  } else if (aa_database[d.letter]['g_property'] == 'acidic') {
-                      return "#FFEE58";
-                  } else if (aa_database[d.letter]['g_property'] == 'basic') {
-                      return "#9575CD";
-                  } else if (aa_database[d.letter]['g_property'] == 'amide') {
-                      return "#2196F3";
-                  } else if (aa_database[d.letter]['g_property'] == 'sulfur') {
-                      return "#FB8C00";
-                  } else if (aa_database[d.letter]['g_property'] == 'hydroxyl') {
-                      return "#009688";
-                  }
-              })
-
-          } else if (selected_filter == "Essentiality") {
-              $("#filter_pallete").append(
-                      "<div class='label'><div class='label_color' style='background-color:#f44336;'></div><div class='label_p'>Essentials</div></div><div class='label'><div class='label_color' style='background-color:#4CAF50;'></div><div class='label_p'>Naturals</div></div>"
-              );
-              d3.selectAll(".letter-bp").style("fill", function (d) {
-                  if (aa_database[d3.select(this).text()]['essentiality'] == 'essential') {
-                      return "#f44336";
-                  } else {
-                      return "#4CAF50";
-                  }
-              })
-          } else if (selected_filter == "Polarity") {
-              $("#filter_pallete").append(
-                      "<div class='label'><div class='label_color' style='background-color:#d32f2f;'></div><div class='label_p'>Polar</div></div><div class='label'><div class='label_color' style='background-color:#B0BEC5;'></div><div class='label_p'>Nonpolar</div></div>"
-              );
-              d3.selectAll(".letter-bp").style("fill", function (d) {
-                  if (aa_database[d3.select(this).text()]['polarity'] == 'polar') {
-                      return "#d32f2f";
-                  } else {
-                      return "#B0BEC5";
-                  }
-              })
-          }
-      }
-  })
-}
-
-
-
-function toTitleCase(str) {
-    return str.replace(/\w\S*/g, function (txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-    });
-}
-//
 // return values
 //
 return ({
