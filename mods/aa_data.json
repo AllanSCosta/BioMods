@@ -1,0 +1,59 @@
+{
+  "sq_logo":[
+    [{
+      "letter": "M",
+      "bits": 0.1
+    }, {
+      "letter": "T",
+      "bits": 0.4
+    }],
+    [{
+      "letter": "T",
+      "bits": 0.1
+    }, {
+      "letter": "C",
+      "bits": 0.4
+    }],
+    [{
+      "letter": "A",
+      "bits": 1.4
+    }],
+    [{
+      "letter": "A",
+      "bits": 1.4
+    }],
+    [{
+      "letter": "C",
+      "bits": 1.4
+    }],
+    [{
+      "letter": "A",
+      "bits": 1.4
+    }],
+    [{
+      "letter": "A",
+      "bits": 0.1
+    }, {
+      "letter": "T",
+      "bits": 0.4
+    }],
+    [{
+      "letter": "A",
+      "bits": 0.1
+    }, {
+      "letter": "C",
+      "bits": 0.4
+    }],
+    [{
+      "letter": "A",
+      "bits": 1.4
+    }],
+    [{
+      "letter": "A",
+      "bits": 0.1
+    }, {
+      "letter": "T",
+      "bits": 0.4
+    }]
+  ]
+}
