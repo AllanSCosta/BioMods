@@ -59,8 +59,8 @@ var outputs = {
    event:function(data){
    var gps_ln = mod.instructions[0]['groups'].length
    if (gps_ln == 0 || mod.newtip){
-     gps_ln++
-     mod.instructions[0]['groups'].push({})
+     gps_ln++;
+     mod.instructions[0]['groups'].push({});
    }
    mix_obj = {}
    mix_obj['container'] = mod.container
@@ -112,7 +112,7 @@ var interface = function(div){
           })
         div.appendChild(input)
   div.appendChild(document.createElement('br'))
-  
+
   div.appendChild(document.createTextNode('volume: '))
   input = document.createElement('input')
         input.type = 'text'

@@ -54,36 +54,40 @@ var interface = function(div){
   //
   // port input
   //
-    div.appendChild(document.createTextNode('port: '))
-    input = document.createElement('input')
-        input.type = 'text'
-        input.size = 10
-        input.addEventListener('change',function(evt){
-          mod.port = input.value
-          })
-        div.appendChild(input)
-        // mod.port = input
+  div.appendChild(document.createTextNode('port: '))
+  input = document.createElement('input')
+      input.type = 'text'
+      input.size = 10
+      input.value = "COM4"
+      input.addEventListener('change',function(evt){
+        mod.port = input.value
+        })
+      div.appendChild(input)
   //
   // connect button
   //
   div.appendChild(document.createElement('br'))
-  var btn = document.createElement('button')
+  btn = document.createElement('button')
      btn.style.padding = mods.ui.padding
      btn.style.margin = 1
      btntxt = document.createTextNode('connect')
      btn.appendChild(btntxt)
      btn.addEventListener('click',function(){
-       if (mod.connected){
-         disconnect();
-         btntxt.innerHTML = "connect"
-       } else {
+       if (!mod.connected){
          connect(mod.port);
-         btntxt.innerHTML = "disconnect"
+       } else {
+         disconnect();
        }
-
       })
      div.appendChild(btn)
   div.appendChild(document.createElement('br'))
+  //
+  // status
+  //
+  div.appendChild(document.createTextNode('status: '))
+  status = document.createElement('p')
+  status.innerHTML = "not connected"
+
 }
 function connect(port) {
   var url = "http://localhost:31950/robot/serial/connect"
@@ -96,7 +100,8 @@ function connect(port) {
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(params),
     success: function(){
-      mod.connected = true
+      mod.port = port;
+      is_connected();
     }
   });
 }
@@ -109,12 +114,33 @@ function disconnect(){
     url: url,
     contentType: "application/json; charset=utf-8",
     success: function(){
-      mod.connected = false
+      mod.port = "";
+      is_connected();
     }
   });
 
 }
 
+function is_connected() {
+  var url = "http://localhost:31950/robot/serial/is_connected"
+  $.ajax({
+    type: "GET",
+    dataType: "json",
+    url: url,
+    contentType: "application/json; charset=utf-8",
+    success: function(data){
+      mod.connected = data.is_connected;
+      mod.port = data.port;
+      if (mod.connected) {
+        btntxt.innerHTML = "disconnect"
+        status.innerHTML = "connected to " + mod.port;
+      } else {
+        btntxt.innerHTML = "connect"
+        status.innerHTML = "disconnected"
+      }
+    }
+  });
+}
 
 //
 // return values

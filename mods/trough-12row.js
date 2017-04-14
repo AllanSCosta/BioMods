@@ -70,14 +70,62 @@ var interface = function(div){
       })
       div.appendChild(input)
 
-  var btn = document.createElement('button')
-     btn.style.padding = mods.ui.padding
-     btn.style.margin = 1
-     btn.appendChild(document.createTextNode('calibrate'))
-     div.appendChild(btn)
-     btn.addEventListener('click', function(){
+
+      
+      ////
+      // calibration & movement
+      ////
+
+       var btn = document.createElement('button')
+          btn.style.padding = mods.ui.padding
+          btn.style.margin = 1
+          btn.appendChild(document.createTextNode('calibrate A'))
+          div.appendChild(btn)
+          btn.addEventListener('click', function(){
+            calibrate(mod.name,'b');
+           })
+
+
+       var btn = document.createElement('button')
+          btn.style.padding = mods.ui.padding
+          btn.style.margin = 1
+          btn.appendChild(document.createTextNode('A'))
+          div.appendChild(btn)
+          btn.addEventListener('click', function(){
+            move_to_slot(mod.name, 'a');
+           })
+       div.appendChild(document.createElement('br'))
+
+
+       var btn = document.createElement('button')
+          btn.style.padding = mods.ui.padding
+          btn.style.margin = 1
+          btn.appendChild(document.createTextNode('calibrate B'))
+          div.appendChild(btn)
+          btn.addEventListener('click', function(){
+            calibrate(mod.name,'b');
+           })
+
+       var btn = document.createElement('button')
+          btn.style.padding = mods.ui.padding
+          btn.style.margin = 1
+          btn.appendChild(document.createTextNode('B'))
+          div.appendChild(btn)
+          btn.addEventListener('click', function(){
+            move_to_slot(mod.name, 'b')
+           })
+       div.appendChild(document.createElement('br'))
+
+
+      }
+
+      //
+      // helper functions
+      //
+
+      function calibrate(name, axis) {
        var url = "http://localhost:31950/calibrate_placeable"
-       var params = {'label': mod.name, 'axis': 'b'}
+       var params = {'label': name, 'axis': axis}
        $.ajax({
          type: "POST",
          dataType: "json",
@@ -85,13 +133,25 @@ var interface = function(div){
          contentType: "application/json; charset=utf-8",
          data: JSON.stringify(params),
          success: function(){
-           console.log('calibrated')
+           console.log('calibrated');
          }
        });
-      })
-  div.appendChild(document.createElement('br'))
-}
+      }
 
+      function move_to_container(slot, axis) {
+       var url = "http://localhost:31950/move_to_container"
+       var params = {'slot': slot, 'axis': axis, 'label': 'A1'}
+       $.ajax({
+         type: "POST",
+         dataType: "json",
+         url: url,
+         contentType: "application/json; charset=utf-8",
+         data: JSON.stringify(params),
+         success: function(){
+           console.log('moving to' + slot);
+         }
+       });
+      }
 
 //
 // return values
