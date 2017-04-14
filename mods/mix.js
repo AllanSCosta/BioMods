@@ -93,7 +93,7 @@ var interface = function(div){
         input.placeholder = "location"
         input.value = "A1"
         input.size = 10
-        input.addEventListener('change',function(evt){
+        input.addEventListener('input',function(evt){
           mod.port = this.value
           outputs.instrument.event();
           })
@@ -106,7 +106,7 @@ var interface = function(div){
         input.placeholder = "repetitions"
         input.value = 5
         input.size = 10
-        input.addEventListener('change',function(evt){
+        input.addEventListener('input',function(evt){
           mod.repetitions = this.value
           outputs.instrument.event();
           })
@@ -119,7 +119,7 @@ var interface = function(div){
         input.placeholder = "volume"
         input.value = 100
         input.size = 10
-        input.addEventListener('change',function(evt){
+        input.addEventListener('input',function(evt){
           mod.volume = this.value
           outputs.instrument.event();
           })

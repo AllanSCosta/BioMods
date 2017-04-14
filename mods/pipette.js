@@ -85,7 +85,7 @@ var outputs = {
 //
 var interface = function(div){
   //
-  // change parameters buttons
+  // input parameters buttons
 
   mod.div = div
   var program = ""
@@ -96,9 +96,10 @@ var interface = function(div){
  var input = document.createElement('input')
      input.type = 'text'
      input.size = 7
-     input.addEventListener('change',function(evt){
+     input.addEventListener('input',function(evt){
        if (mod.name in head) { delete head[mod.name] }
        mod.name = this.value
+       build_pipette();
        })
      div.appendChild(input)
 
@@ -108,8 +109,9 @@ var interface = function(div){
      input.type = 'text'
      input.size = 7
      input.value = "p200-rack"
-     input.addEventListener('change',function(evt){
+     input.addEventListener('input',function(evt){
        mod.pipette["tip-racks"] = [{"container": this.value}]
+       build_pipette();
        })
      div.appendChild(input)
  div.appendChild(document.createElement('br'))
@@ -120,8 +122,9 @@ var interface = function(div){
      input.type = 'text'
      input.size = 7
      input.value = "trash"
-     input.addEventListener('change',function(evt){
+     input.addEventListener('input',function(evt){
        mod.pipette["trash-container"] = {"container" : this.value}
+       build_pipette();
        })
      div.appendChild(input)
 
@@ -132,8 +135,9 @@ var interface = function(div){
        input.type = 'checked'
        input.size = 5
        input.value = false
-       input.addEventListener('change',function(evt){
+       input.addEventListener('input',function(evt){
          mod.pipette['multi-channel'] = this.checked;
+         build_pipette();
          })
        div.appendChild(input)
 
@@ -144,8 +148,9 @@ var interface = function(div){
        input.type = 'text'
        input.size = 4
        input.value = "a"
-       input.addEventListener('change',function(evt){
+       input.addEventListener('input',function(evt){
          mod.pipette["axis"] = this.value
+         build_pipette();
          })
        div.appendChild(input)
 
@@ -155,8 +160,9 @@ var interface = function(div){
        input.type = 'number'
        input.size = 4
        input.value = 200
-       input.addEventListener('change',function(evt){
+       input.addEventListener('input',function(evt){
          mod.pipette["volume"] = this.value
+         build_pipette();
          })
        div.appendChild(input)
 
@@ -166,8 +172,9 @@ var interface = function(div){
        input.type = 'number'
        input.value = 300
        input.size = 4
-       input.addEventListener('change',function(evt){
+       input.addEventListener('input',function(evt){
          mod.pipette["down-plunger-speed"] = this.value
+         build_pipette();
          })
        div.appendChild(input)
 
@@ -177,8 +184,9 @@ var interface = function(div){
         input.type = 'number'
         input.value = 500
         input.size = 4
-        input.addEventListener('change',function(evt){
+        input.addEventListener('input',function(evt){
           mod.pipette["up-plunger-speed"] = this.value
+          build_pipette();
           })
         div.appendChild(input)
 
@@ -190,8 +198,9 @@ var interface = function(div){
        input.type = 'number'
        input.value = 8
        input.size = 4
-       input.addEventListener('change',function(evt){
+       input.addEventListener('input',function(evt){
          mod.pipette["tip-plunge"] = this.value
+         build_pipette();
          })
        div.appendChild(input)
 
@@ -201,8 +210,9 @@ var interface = function(div){
         input.type = 'number'
         input.size = 4
         input.value = 20
-        input.addEventListener('change',function(evt){
+        input.addEventListener('input',function(evt){
           mod.pipette["extra-pull-volume"] = this.value
+          build_pipette();
           })
         div.appendChild(input)
 
@@ -212,8 +222,9 @@ var interface = function(div){
         input.type = 'number'
         input.value = 0.2
         input.size = 4
-        input.addEventListener('change',function(evt){
+        input.addEventListener('input',function(evt){
           mod.pipette["extra-pull-delay"] = this.value
+          build_pipette();
           })
         div.appendChild(input)
 
@@ -223,24 +234,11 @@ var interface = function(div){
         input.type = 'number'
         input.value = 0.1
         input.size = 4
-        input.addEventListener('change',function(evt){
+        input.addEventListener('input',function(evt){
           mod.pipette["distribute-percentage"] = this.value
+          build_pipette();
           })
         div.appendChild(input)
-
-  //
-  // build button
-  //
-  div.appendChild(document.createElement('br'))
-  var btn = document.createElement('button')
-     btn.style.padding = mods.ui.padding
-     btn.style.margin = 1
-     btn.appendChild(document.createTextNode('start workflow'))
-     btn.addEventListener('click',function(){
-       build_pipette();
-      })
-     div.appendChild(btn)
-  div.appendChild(document.createElement('br'))
 }
 
 
