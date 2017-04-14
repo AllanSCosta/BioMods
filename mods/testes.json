@@ -1,0 +1,66 @@
+{
+  "head": {
+    "pip": {
+      "tip-racks": [{
+        "container": "tiprack"
+      }],
+      "trash-container": {
+        "container": "tiprack"
+      },
+      "multi-channel": false,
+      "axis": "b",
+      "volume": 200,
+      "down-plunger-speed": 300,
+      "up-plunger-speed": 500,
+      "tip-plunge": 8,
+      "extra-pull-volume": 20,
+      "extra-pull-delay": 0.2,
+      "distribute-percentage": 0.1,
+      "points": [{
+        "f1": 10,
+        "f2": 6
+      }, {
+        "f1": 25,
+        "f2": 23
+      }, {
+        "f1": 50,
+        "f2": 49
+      }, {
+        "f1": 200,
+        "f2": 200
+      }],
+      "tool": "pipette"
+    }
+  },
+  "deck": {
+    "tiprack": {
+      "labware": "tiprack-200ul"
+    },
+    "secondtrough": {
+      "labware": "trough-12row"
+    },
+    "trough": {
+      "labware": "trough-12row"
+    }
+  },
+  "instructions": [{
+    "tool": "pip",
+    "groups": [{
+      "transfer": [{
+        "blowout": true,
+        "extra-pull": true,
+        "from": {
+          "tip-offset": -2,
+          "delay": 2,
+          "touch-tip": true,
+          "target": "secondtrough",
+          "container": "trough"
+        },
+        "to": {
+          "touch-tip": true
+        },
+        "volume": 100
+      }]
+    }]
+  }]
+}
