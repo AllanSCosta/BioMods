@@ -1,6 +1,6 @@
 {
   "head": {
-    "pip": {
+    "pipette": {
       "tip-racks": [{
         "container": "tiprack"
       }],
@@ -39,28 +39,34 @@
     "secondtrough": {
       "labware": "trough-12row"
     },
-    "trough": {
+    "troughhh": {
       "labware": "trough-12row"
     }
   },
   "instructions": [{
-    "tool": "pip",
+    "tool": "pipette",
     "groups": [{
-      "transfer": [{
+      "distribute": {
         "blowout": true,
-        "extra-pull": true,
         "from": {
           "tip-offset": -2,
           "delay": 2,
           "touch-tip": true,
-          "target": "secondtrough",
-          "container": "trough"
+          "location": 0,
+          "container": "troughhh"
         },
-        "to": {
+        "to": [{
+          "container": "secondtrough",
+          "location": 0,
+          "volume": 100,
           "touch-tip": true
-        },
-        "volume": 100
-      }]
+        }, {
+          "container": "secondtrough",
+          "location": 1,
+          "volume": 100,
+          "touch-tip": true
+        }]
+      }
     }]
   }]
 }

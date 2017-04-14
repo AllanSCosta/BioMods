@@ -26,7 +26,8 @@ var init = function() {
   mod.volume = 100
   mod.source =  {"tip-offset": -2,
                  "delay" : 2,
-                 "touch-tip" : true}
+                 "touch-tip" : true,
+                 "location": "A1"}
   mod.range_start = 0
   mod.range_end = 1
   mod.newtip = false
@@ -53,7 +54,7 @@ var inputs = {
     target:{
     type:'string',
     event:function(evt){
-       mod.source['target'] = evt.detail
+       mod.target['container'] = evt.detail
        outputs.instrument.event();
      }},
 }
@@ -67,7 +68,7 @@ var outputs = {
    event:function(data){
 
    var gps_ln = mod.instructions[0]['groups'].length
-   if (gps_ln == 0 || newtip){
+   if (gps_ln == 0 || mod.newtip){
      mod.instructions[0]['groups'].push({})
      gps_ln++;
    }
