@@ -24,6 +24,8 @@ var name = 'labware'
 var init = function() {
   mod.name = 'trough'
   mod.type = 'trough-12row'
+  mod.bcoords = {}
+  mod.acoords = {}
   if (typeof deck == "undefined") { deck = {} }
  }
 //
@@ -66,12 +68,12 @@ var interface = function(div){
       input.addEventListener("input", function(){
         delete deck[mod.name]
         mod.name = this.value
-        deck[mod.name] = {'labware': mod.type}
+        deck[mod.name] = {'labware': mod.type, 'bcoords' : mod.bcoords, 'acoords' : mod.acoords}
         outputs.tiprack.event();
       })
       div.appendChild(input)
     //
-    // name
+    // type
     //
     div.appendChild(document.createElement('br'))
     var input = document.createElement('input')
@@ -82,7 +84,7 @@ var interface = function(div){
        input.addEventListener("input", function(){
          delete deck[mod.name]
          mod.type = input.value
-         deck[mod.name] = {'labware': mod.type}
+         deck[mod.name] = {'labware': mod.type, 'bcoords' : mod.bcoords, 'acoords' : mod.acoords}
          outputs.tiprack.event();
        })
        div.appendChild(input)
@@ -100,7 +102,7 @@ var interface = function(div){
      btn.appendChild(document.createTextNode('calibrate A'))
      div.appendChild(btn)
      btn.addEventListener('click', function(){
-       calibrate(mod.name,'b');
+       calibrate(mod.name,'a');
       })
 
 
@@ -110,7 +112,7 @@ var interface = function(div){
      btn.appendChild(document.createTextNode('A'))
      div.appendChild(btn)
      btn.addEventListener('click', function(){
-       move_to_slot(mod.name, 'a');
+       move_to_container(mod.name, 'a');
       })
   div.appendChild(document.createElement('br'))
 
@@ -130,7 +132,7 @@ var interface = function(div){
      btn.appendChild(document.createTextNode('B'))
      div.appendChild(btn)
      btn.addEventListener('click', function(){
-       move_to_slot(mod.name, 'b')
+       move_to_container(mod.name, 'b')
       })
   div.appendChild(document.createElement('br'))
 
@@ -142,23 +144,28 @@ var interface = function(div){
 //
 
 function calibrate(name, axis) {
-  var url = "http://localhost:31950/calibrate_placeable"
-  var params = {'label': name, 'axis': axis}
+  var url = "http://localhost:31950/robot/get_coordinates"
   $.ajax({
-    type: "POST",
+    type: "GET",
     dataType: "json",
     url: url,
     contentType: "application/json; charset=utf-8",
-    data: JSON.stringify(params),
-    success: function(){
-      console.log('calibrated');
+    success: function(coords){
+      coords = coords['coords']
+      console.log(coords)
+      // coords['x'] = -coords['x']
+      // coords['z'] = -coords['z']
+      mod[axis + 'coords'] = coords
     }
-  });
+  })
 }
 
-function move_to_container(slot, axis) {
-  var url = "http://localhost:31950/move_to_container"
-  var params = {'slot': slot, 'axis': axis, 'label': 'A1'}
+function move_to_container(name, axis) {
+  var url = "http://localhost:31950/move_absolute"
+  var this_coords = axis + 'coords'
+
+  var params = mod[this_coords]
+
   $.ajax({
     type: "POST",
     dataType: "json",
@@ -166,9 +173,10 @@ function move_to_container(slot, axis) {
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(params),
     success: function(){
-      console.log('moving to' + slot);
+      console.log('moving to ' + name);
     }
   });
+
 }
 
 
