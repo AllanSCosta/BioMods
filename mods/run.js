@@ -35,7 +35,6 @@ var inputs = {
       mod.upload['head'] = head
       mod.upload['deck'] = deck
       mod.upload['instructions'] = mod.instructions
-      console.log("comon")
     }}
 }
 //
@@ -62,14 +61,14 @@ var interface = function(div){
      btn.style.margin = 1
      btn.appendChild(document.createTextNode('start'))
      btn.addEventListener('click',function(){
-       post_value()
+       upload_protocols()
       })
      div.appendChild(btn)
   div.appendChild(document.createElement('br'))
 }
 
 //Local Functions
-function post_value() {
+function upload_protocols() {
 
   var file = new File([JSON.stringify(mod.upload)], "upload.json", {type:"text/plain", lastModified: new Date().getTime()});
 
@@ -80,27 +79,30 @@ function post_value() {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', url, true);
-  xhr.onload = function(e) { console.log("AEPORRA") };
+  xhr.onload = function(e) {
+    calibrate_instruments();
+    calibrate_placeables();
+    run();
+  };
 
   console.log(JSON.stringify(mod.upload))
-  console.log(file)
   xhr.send(formData);  // multipart/form-data
 
+}
+
+function run(){
   setTimeout(function(){
     var root = "http://localhost:31950/run"
-    console.log("running");
     $jsonp.send(root, {
           callbackName: 'handleStuff',
           onSuccess: function(json){
+              console.log("running");
               clearInterval(request);
           },
           timeout: 15
       });
     }, 5000)
-
-
 }
-
 
 
 //

@@ -97,7 +97,7 @@ var interface = function(div){
   div.appendChild(document.createElement('br'))
   div.appendChild(document.createElement('br'))
 
-
+..
   var btn = document.createElement('button')
      btn.style.padding = mods.ui.padding
      btn.style.margin = 1

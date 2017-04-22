@@ -22,7 +22,7 @@ var name = 'labware'
 // initialization
 //
 var init = function() {
-  mod.name = 'trough'
+  mod.name = ''
   mod.type = 'trough-12row'
   mod.bcoords = {}
   mod.acoords = {}
@@ -65,7 +65,7 @@ var interface = function(div){
       input.value = 'name'
       input.placeholder = 'name'
       input.size = 10
-      input.addEventListener("input", function(){
+      input.addEventListener("change", function(){
         delete deck[mod.name]
         mod.name = this.value
         deck[mod.name] = {'labware': mod.type, 'bcoords' : mod.bcoords, 'acoords' : mod.acoords}
@@ -81,7 +81,7 @@ var interface = function(div){
        input.value = 'trough-12row'
        input.placeholder = 'type'
        input.size = 10
-       input.addEventListener("input", function(){
+       input.addEventListener("change", function(){
          delete deck[mod.name]
          mod.type = input.value
          deck[mod.name] = {'labware': mod.type, 'bcoords' : mod.bcoords, 'acoords' : mod.acoords}
@@ -91,93 +91,8 @@ var interface = function(div){
 
   div.appendChild(document.createElement('br'))
   div.appendChild(document.createElement('br'))
-
- ////
- // calibration & movement
- ////
-
-  var btn = document.createElement('button')
-     btn.style.padding = mods.ui.padding
-     btn.style.margin = 1
-     btn.appendChild(document.createTextNode('calibrate A'))
-     div.appendChild(btn)
-     btn.addEventListener('click', function(){
-       calibrate(mod.name,'a');
-      })
-
-
-  var btn = document.createElement('button')
-     btn.style.padding = mods.ui.padding
-     btn.style.margin = 1
-     btn.appendChild(document.createTextNode('A'))
-     div.appendChild(btn)
-     btn.addEventListener('click', function(){
-       move_to_container(mod.name, 'a');
-      })
-  div.appendChild(document.createElement('br'))
-
-
-  var btn = document.createElement('button')
-     btn.style.padding = mods.ui.padding
-     btn.style.margin = 1
-     btn.appendChild(document.createTextNode('calibrate B'))
-     div.appendChild(btn)
-     btn.addEventListener('click', function(){
-       calibrate(mod.name,'b');
-      })
-
-  var btn = document.createElement('button')
-     btn.style.padding = mods.ui.padding
-     btn.style.margin = 1
-     btn.appendChild(document.createTextNode('B'))
-     div.appendChild(btn)
-     btn.addEventListener('click', function(){
-       move_to_container(mod.name, 'b')
-      })
-  div.appendChild(document.createElement('br'))
-
-
 }
 
-//
-// helper functions
-//
-
-function calibrate(name, axis) {
-  var url = "http://localhost:31950/robot/get_coordinates"
-  $.ajax({
-    type: "GET",
-    dataType: "json",
-    url: url,
-    contentType: "application/json; charset=utf-8",
-    success: function(coords){
-      coords = coords['coords']
-      console.log(coords)
-      // coords['x'] = -coords['x']
-      // coords['z'] = -coords['z']
-      mod[axis + 'coords'] = coords
-    }
-  })
-}
-
-function move_to_container(name, axis) {
-  var url = "http://localhost:31950/move_absolute"
-  var this_coords = axis + 'coords'
-
-  var params = mod[this_coords]
-
-  $.ajax({
-    type: "POST",
-    dataType: "json",
-    url: url,
-    contentType: "application/json; charset=utf-8",
-    data: JSON.stringify(params),
-    success: function(){
-      console.log('moving to ' + name);
-    }
-  });
-
-}
 
 
 
