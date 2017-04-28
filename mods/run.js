@@ -54,14 +54,27 @@ var interface = function(div){
   var sel = document.createElement('select')
      sel.style.padding = mods.ui.padding
   //
-  // view button
+  // upload button
   //
   var btn = document.createElement('button')
      btn.style.padding = mods.ui.padding
      btn.style.margin = 1
-     btn.appendChild(document.createTextNode('start'))
+     btn.appendChild(document.createTextNode('upload protocols'))
      btn.addEventListener('click',function(){
        upload_protocols()
+      })
+     div.appendChild(btn)
+  div.appendChild(document.createElement('br'))
+  div.appendChild(document.createElement('br'))
+  //
+  // upload button
+  //
+  var btn = document.createElement('button')
+     btn.style.padding = mods.ui.padding
+     btn.style.margin = 1
+     btn.appendChild(document.createTextNode('run protocols'))
+     btn.addEventListener('click',function(){
+       run();
       })
      div.appendChild(btn)
   div.appendChild(document.createElement('br'))
@@ -79,12 +92,6 @@ function upload_protocols() {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', url, true);
-  xhr.onload = function(e) {
-    calibrate_instruments();
-    calibrate_placeables();
-    run();
-  };
-
   console.log(JSON.stringify(mod.upload))
   xhr.send(formData);  // multipart/form-data
 
