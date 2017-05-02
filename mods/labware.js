@@ -22,8 +22,9 @@ var name = 'labware'
 // initialization
 //
 var init = function() {
-  mod.name = ''
+  mod.name = 'name'
   mod.type = 'trough-12row'
+  mod.slot = "A1"
   mod.bcoords = {}
   mod.acoords = {}
   if (typeof deck == "undefined") { deck = {} }
@@ -123,7 +124,7 @@ var btn = document.createElement('button')
    acal = document.createTextNode('calibrate')
    btn.appendChild(acal)
    btn.addEventListener('click',function(){
-     calibrate(mod.name, mod.spot, 'a');
+     calibrate(mod.name, mod.slot, 'a', mod.type);
      acal.innerHTML = 'calibrated'
     })
    div.appendChild(btn)
@@ -132,7 +133,7 @@ var btn = document.createElement('button')
     btn.style.margin = 1
     btn.appendChild(document.createTextNode('move'))
     btn.addEventListener('click',function(){
-      move_to_container(mod.name, 'a');
+      move_to_container(mod.name, mod.slot, 'a');
      })
     div.appendChild(btn)
 div.appendChild(document.createElement('br'))
@@ -144,7 +145,7 @@ var btn = document.createElement('button')
    bcal = document.createTextNode('calibrate')
    btn.appendChild(bcal)
    btn.addEventListener('click',function(){
-     calibrate(mod.name, mod.spot, 'b');
+     calibrate(mod.name, mod.slot, 'b', mod.type);
      bcal.innerHTML = 'calibrated'
     })
 
@@ -154,7 +155,7 @@ var btn = document.createElement('button')
     btn.style.margin = 1
     btn.appendChild(document.createTextNode('move'))
     btn.addEventListener('click',function(){
-      move_to_container(mod.name, 'b');
+      move_to_container(mod.name, mod.slot, 'b');
      })
     div.appendChild(btn)
 
@@ -162,9 +163,9 @@ var btn = document.createElement('button')
 }
 
 
-function calibrate(name, slot, axis) {
-  var url = "http://localhost:31950/calibrate_position"
-  var params = {"label" : name, 'slot': slot, 'axis': axis}
+function calibrate(name, slot, axis, type) {
+  var url = "http://localhost:31950/calibrate_placeable"
+  var params = {"label" : name, 'slot': slot, 'axis': axis, "type": type}
   $.ajax({
     type: "POST",
     dataType: "json",
